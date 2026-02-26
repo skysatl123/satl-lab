@@ -1,0 +1,30 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('notes')).sort(
+  (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
+);
+---
+
+<Layout title="Lab Notes | SATL Lab">
+  <main class="mx-auto max-w-3xl px-4 py-12">
+    <h1 class="text-3xl font-bold">Lab Notes</h1>
+    <p class="mt-2 text-neutral-400">실험, 과제, 삽질 기록. 짧고 자주.</p>
+
+    {posts.length === 0 ? (
+      <div class="mt-10 rounded border border-neutral-800 bg-neutral-900 p-8 text-center text-neutral-500">
+        노트가 곧 추가됩니다.
+      </div>
+    ) : (
+      <div class="mt-8 space-y-4">
+        {posts.map((post) => (
+          <a href={`/notes/${post.id}`} class="block rounded border border-neutral-800 bg-neutral-900 px-5 py-4 no-underline transition hover:border-neutral-600">
+            <h2 class="text-lg font-semibold text-white">{post.data.title}</h2>
+            <p class="mt-1 text-sm text-neutral-500">{post.data.date}</p>
+          </a>
+        ))}
+      </div>
+    )}
+  </main>
+</Layout>

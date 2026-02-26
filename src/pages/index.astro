@@ -1,17 +1,97 @@
 ---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
 
+const recentBlog = (await getCollection('blog')).sort(
+  (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
+).slice(0, 3);
+
+const recentNotes = (await getCollection('notes')).sort(
+  (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
+).slice(0, 3);
+
+const featuredProjects = (await getCollection('projects')).filter(
+  (p) => p.data.featured
+).slice(0, 3);
+
+const categories = [
+  "Signals & Systems",
+  "Electronic Circuits",
+  "Circuits Lab",
+  "EM / RF",
+  "Semiconductor Devices",
+];
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout title="SATL Lab">
+  <main class="mx-auto max-w-4xl px-4 py-16">
+
+    <section class="text-center">
+      <h1 class="text-5xl font-bold tracking-tight">SATL Lab</h1>
+      <p class="mt-4 text-lg text-neutral-400">
+        From theory to measurement — circuits, signals, silicon.
+      </p>
+      <div class="mt-6 flex flex-wrap justify-center gap-2">
+        {categories.map((cat) => (
+          <span class="rounded-full border border-neutral-700 bg-neutral-900 px-3 py-1 text-xs text-neutral-300">{cat}</span>
+        ))}
+      </div>
+    </section>
+
+    {featuredProjects.length > 0 && (
+      <section class="mt-16">
+        <h2 class="text-2xl font-bold">Featured Projects</h2>
+        <div class="mt-4 grid gap-4 md:grid-cols-3">
+          {featuredProjects.map((post) => (
+            <a href={`/projects/${post.id}`} class="rounded border border-neutral-800 bg-neutral-900 p-5 no-underline transition hover:border-neutral-600">
+              <span class="text-xs text-neutral-500">{post.data.category}</span>
+              <h3 class="mt-1 font-semibold text-white">{post.data.title}</h3>
+              {post.data.description && (
+                <p class="mt-2 text-sm text-neutral-400">{post.data.description}</p>
+              )}
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <section class="mt-16">
+      <div class="flex items-center justify-between">
+        <h2 class="text-2xl font-bold">Recent Blog</h2>
+        <a href="/blog" class="text-sm text-neutral-400 no-underline hover:text-white">View all →</a>
+      </div>
+      {recentBlog.length === 0 ? (
+        <p class="mt-4 text-neutral-500">글이 곧 추가됩니다.</p>
+      ) : (
+        <div class="mt-4 space-y-3">
+          {recentBlog.map((post) => (
+            <a href={`/blog/${post.id}`} class="block rounded border border-neutral-800 bg-neutral-900 px-5 py-4 no-underline transition hover:border-neutral-600">
+              <h3 class="font-semibold text-white">{post.data.title}</h3>
+              <p class="mt-1 text-sm text-neutral-500">{post.data.date}</p>
+            </a>
+          ))}
+        </div>
+      )}
+    </section>
+
+    <section class="mt-16">
+      <div class="flex items-center justify-between">
+        <h2 class="text-2xl font-bold">Recent Lab Notes</h2>
+        <a href="/notes" class="text-sm text-neutral-400 no-underline hover:text-white">View all →</a>
+      </div>
+      {recentNotes.length === 0 ? (
+        <p class="mt-4 text-neutral-500">노트가 곧 추가됩니다.</p>
+      ) : (
+        <div class="mt-4 space-y-3">
+          {recentNotes.map((post) => (
+            <a href={`/notes/${post.id}`} class="block rounded border border-neutral-800 bg-neutral-900 px-5 py-4 no-underline transition hover:border-neutral-600">
+              <h3 class="font-semibold text-white">{post.data.title}</h3>
+              <p class="mt-1 text-sm text-neutral-500">{post.data.date}</p>
+            </a>
+          ))}
+        </div>
+      )}
+    </section>
+
+  </main>
+</Layout>

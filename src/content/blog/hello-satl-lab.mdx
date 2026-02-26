@@ -1,0 +1,52 @@
+---
+title: "SATL Lab을 시작합니다"
+date: "2026-02-27"
+category: "General"
+tags: ["intro"]
+description: "전자공학 3학년, 학기 프로젝트를 기록하는 공간을 만들었습니다."
+---
+
+## SATL Lab
+
+이 사이트는 전자공학 공부와 프로젝트를 **재현 가능한 형태**로 정리하는 개인 연구실 노트입니다.
+
+### 이번 학기 계획
+
+- 신호 및 시스템
+- 전자회로 / 전자회로 실험
+- 전파공학
+- 반도체 소자
+- 학부연구생
+
+매주 Lab Notes를 쓰고, 한 달에 하나씩 Project를 완성하는 것이 목표입니다.
+
+### 수식 테스트
+
+옴의 법칙:
+
+$$
+V = IR
+$$
+
+MOSFET 드레인 전류 (포화 영역):
+
+$$
+I_D = \frac{1}{2} \mu_n C_{ox} \frac{W}{L} (V_{GS} - V_{th})^2
+$$
+
+### 코드 테스트
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+
+t = np.linspace(0, 1, 1000)
+f = 10  # Hz
+signal = np.sin(2 * np.pi * f * t)
+
+plt.plot(t, signal)
+plt.xlabel("Time (s)")
+plt.ylabel("Amplitude")
+plt.title("10 Hz Sine Wave")
+plt.grid(True)
+plt.show()
+```
