@@ -1,0 +1,60 @@
+backend:
+  name: github
+  repo: skysatl123/satl-lab
+  branch: main
+  base_url: https://shiny-otter-81bd09.netlify.app
+
+media_folder: public/images
+public_folder: /images
+
+collections:
+  - name: blog
+    label: Blog
+    folder: src/content/blog
+    create: true
+    extension: mdx
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Date", name: "date", widget: "datetime", format: "YYYY-MM-DD" }
+      - { label: "Category", name: "category", widget: "string", required: false }
+      - { label: "Tags", name: "tags", widget: "list", required: false }
+      - { label: "Description", name: "description", widget: "string", required: false }
+      - { label: "Body", name: "body", widget: "markdown" }
+
+  - name: projects
+    label: Projects
+    folder: src/content/projects
+    create: true
+    extension: mdx
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Date", name: "date", widget: "datetime", format: "YYYY-MM-DD" }
+      - { label: "Category", name: "category", widget: "select", options: ["Signals & Systems", "Electronic Circuits", "Circuits Lab", "EM / RF", "Semiconductor Devices"] }
+      - { label: "Status", name: "status", widget: "select", options: ["featured", "completed", "in-progress", "archived"], default: "in-progress" }
+      - { label: "Tags", name: "tags", widget: "list", required: false }
+      - { label: "Description", name: "description", widget: "string", required: false }
+      - { label: "Featured", name: "featured", widget: "boolean", default: false, required: false }
+      - { label: "Body", name: "body", widget: "markdown" }
+
+  - name: notes
+    label: Lab Notes
+    folder: src/content/notes
+    create: true
+    extension: mdx
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Date", name: "date", widget: "datetime", format: "YYYY-MM-DD" }
+      - { label: "Tags", name: "tags", widget: "list", required: false }
+      - { label: "Body", name: "body", widget: "markdown" }
+
+  - name: research
+    label: Research
+    folder: src/content/research
+    create: true
+    extension: mdx
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Date", name: "date", widget: "datetime", format: "YYYY-MM-DD" }
+      - { label: "Type", name: "type", widget: "select", options: ["reading", "experiment", "weekly", "output"], required: false }
+      - { label: "Tags", name: "tags", widget: "list", required: false }
+      - { label: "Body", name: "body", widget: "markdown" }

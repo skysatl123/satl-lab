@@ -18,6 +18,7 @@ const projects = defineCollection({
     title: z.string(),
     date: z.string(),
     category: z.string(),
+    status: z.enum(["featured", "completed", "in-progress", "archived"]).default("in-progress"),
     tags: z.array(z.string()).optional(),
     description: z.string().optional(),
     featured: z.boolean().optional(),
