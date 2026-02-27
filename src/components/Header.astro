@@ -1,4 +1,6 @@
 ---
+import ThemeToggle from './ThemeToggle.astro';
+
 const nav = [
   { label: "Home", href: "/" },
   { label: "Projects", href: "/projects" },
@@ -9,27 +11,31 @@ const nav = [
 ];
 ---
 
-<header class="sticky top-0 z-50 border-b border-neutral-800 bg-neutral-950/80 backdrop-blur">
+<header class="sticky top-0 z-50 border-b border-neutral-800 bg-neutral-950/80 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/80">
   <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
     <a href="/" class="flex items-center gap-2 no-underline">
-      <span class="text-lg font-bold tracking-tight text-white">SATL Lab</span>
+      <span class="text-lg font-bold tracking-tight text-white dark:text-white">SATL Lab</span>
       <span class="hidden text-xs text-neutral-500 sm:inline">circuits · signals · silicon</span>
     </a>
 
-    <nav class="hidden items-center gap-5 md:flex">
-      {nav.map((item) => (
-        <a href={item.href} class="text-sm text-neutral-400 no-underline transition hover:text-white">
-          {item.label}
-        </a>
-      ))}
-    </nav>
+    <div class="hidden items-center gap-5 md:flex">
+      <nav class="flex items-center gap-5">
+        {nav.map((item) => (
+          <a href={item.href} class="text-sm text-neutral-400 no-underline transition hover:text-white">
+            {item.label}
+          </a>
+        ))}
+      </nav>
+      <ThemeToggle />
+    </div>
   </div>
 
-  <nav class="flex gap-3 overflow-x-auto px-4 pb-3 md:hidden">
+  <nav class="flex items-center gap-3 overflow-x-auto px-4 pb-3 md:hidden">
     {nav.map((item) => (
       <a href={item.href} class="whitespace-nowrap rounded-full border border-neutral-700 bg-neutral-900 px-3 py-1 text-xs text-neutral-300 no-underline transition hover:bg-neutral-800">
         {item.label}
       </a>
     ))}
+    <ThemeToggle />
   </nav>
 </header>
