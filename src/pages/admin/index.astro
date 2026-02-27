@@ -9,21 +9,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SATL Lab Admin</title>
     <style>
-      .login-box { max-width: 400px; margin: 100px auto; text-align: center; font-family: sans-serif; }
+      body { margin: 0; font-family: sans-serif; }
+      .login-box { max-width: 400px; margin: 100px auto; text-align: center; }
       input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
       button { padding: 10px 20px; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer; }
     </style>
   </head>
   <body>
-    <div id="login-box" class="login-box" style="display:none;">
+    <div id="login-box" class="login-box">
       <h2>SATL Lab Admin</h2>
-      <p>GitHub Personal Access Token을 입력하세요</p>
+      <p>GitHub Personal Access Token</p>
       <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxx" />
       <br/>
-      <button onclick="doLogin()">Login</button>
+      <button id="login-btn">Login</button>
     </div>
     <script is:inline>
-      function doLogin() {
+      var stored = localStorage.getItem('netlify-cms-user');
+      if (stored) {
+        document.getElementById('login-box').style.display = 'none';
+        var s = document.createElement('script');
+        s.src = 'https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js';
+        document.body.appendChild(s);
+      }
+      document.getElementById('login-btn').addEventListener('click', function() {
         var token = document.getElementById('token-input').value.trim();
         if (token) {
           localStorage.setItem('netlify-cms-user', JSON.stringify({
@@ -34,12 +42,7 @@
           }));
           location.reload();
         }
-      }
-      // Show login box only if not logged in
-      if (!localStorage.getItem('netlify-cms-user')) {
-        document.getElementById('login-box').style.display = 'block';
-      }
+      });
     </script>
-    <script is:inline src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
   </body>
 </html>
