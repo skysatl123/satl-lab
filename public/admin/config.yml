@@ -3,8 +3,8 @@ backend:
   repo: skysatl123/satl-lab
   branch: main
   base_url: https://api.netlify.com
-  auth_endpoint: auth?provider=github&site_id=shiny-otter-81bd09.netlify.app
-
+  site_id: shiny-otter-81bd09.netlify.app
+  
 media_folder: public/images
 public_folder: /images
 
