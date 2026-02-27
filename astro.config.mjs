@@ -5,11 +5,15 @@ import mdx from '@astrojs/mdx';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
+import cloudflare from '@astrojs/cloudflare';
+
 export default defineConfig({
   integrations: [mdx()],
+
   vite: {
     plugins: [tailwindcss()]
   },
+
   markdown: {
     shikiConfig: {
       theme: 'github-dark',
@@ -17,4 +21,6 @@ export default defineConfig({
     remarkPlugins: [remarkMath],
     rehypePlugins: [rehypeKatex],
   },
+
+  adapter: cloudflare(),
 });
