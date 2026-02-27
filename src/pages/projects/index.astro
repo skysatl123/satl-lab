@@ -22,26 +22,29 @@ const categories = [
 
     <div class="mt-6 flex flex-wrap gap-2">
       {categories.map((cat) => (
-        <span class="rounded-full border border-neutral-700 bg-neutral-900 px-3 py-1 text-xs text-neutral-300">{cat}</span>
+        <span class="rounded-full border border-neutral-700 bg-neutral-900 px-3 py-1 text-xs text-neutral-300 font-mono">{cat}</span>
       ))}
     </div>
 
     {posts.length === 0 ? (
-      <div class="mt-10 rounded border border-neutral-800 bg-neutral-900 p-8 text-center text-neutral-500">
-        프로젝트가 곧 추가됩니다.
+      <div class="mt-10 rounded border border-neutral-800 bg-neutral-900 p-8 text-center text-neutral-500 font-mono text-sm">
+        // no projects yet
       </div>
     ) : (
       <div class="mt-8 space-y-4">
         {posts.map((post) => (
-          <a href={`/projects/${post.id}`} class="block rounded border border-neutral-800 bg-neutral-900 px-5 py-4 no-underline transition hover:border-neutral-600">
-            <div class="flex items-center gap-3">
-              <span class="rounded-full border border-neutral-600 px-2 py-0.5 text-xs text-neutral-400">{post.data.category}</span>
-              {post.data.featured && <span class="text-xs text-yellow-400">Featured</span>}
+          <a href={`/projects/${post.id}`} class="group relative block overflow-hidden rounded border border-neutral-800 bg-neutral-900 px-5 py-4 no-underline transition hover:border-cyan-800">
+            <div class="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-[0.04]"
+              style="background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px); background-size: 16px 16px;">
             </div>
-            <h2 class="mt-2 text-lg font-semibold text-white">{post.data.title}</h2>
-            <p class="mt-1 text-sm text-neutral-500">{post.data.date}</p>
+            <div class="relative flex items-center gap-3">
+              <span class="rounded-full border border-neutral-600 px-2 py-0.5 text-xs text-neutral-400 font-mono">{post.data.category}</span>
+              {post.data.featured && <span class="text-xs text-cyan-400 font-mono">★ featured</span>}
+            </div>
+            <h2 class="relative mt-2 text-lg font-semibold text-white">{post.data.title}</h2>
+            <p class="relative mt-1 text-sm text-neutral-500 font-mono">{post.data.date}</p>
             {post.data.description && (
-              <p class="mt-2 text-sm text-neutral-400">{post.data.description}</p>
+              <p class="relative mt-2 text-sm text-neutral-400">{post.data.description}</p>
             )}
           </a>
         ))}
