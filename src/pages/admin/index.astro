@@ -8,6 +8,20 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SATL Lab Admin</title>
+    <script>
+      // Handle OAuth callback
+      if (document.location.search.includes('code=')) {
+        const params = new URLSearchParams(document.location.search);
+        const code = params.get('code');
+        if (window.opener) {
+          window.opener.postMessage(
+            'authorization:github:success:' + JSON.stringify({ token: code, provider: 'github' }),
+            document.location.origin
+          );
+          window.close();
+        }
+      }
+    </script>
   </head>
   <body>
     <script is:inline src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
