@@ -12,6 +12,19 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 const { Content } = await render(post);
+
+// ✅ 날짜/요일/시간만 (KST 기준), GMT/UTC 같은 문자열 안 나오게 포맷
+const fmt = (d: Date) =>
+  new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(d);
 ---
 
 <Layout title={`${post.data.title} | SATL Lab`}>
@@ -21,7 +34,7 @@ const { Content } = await render(post);
     </a>
 
     <h1 class="mt-4 text-3xl font-bold">{post.data.title}</h1>
-    <p class="mt-2 text-sm text-neutral-500">{post.data.date}</p>
+    <p class="mt-2 text-sm text-neutral-500">{fmt(post.data.date)}</p>
 
     {post.data.tags && (
       <div class="mt-3 flex gap-2">
