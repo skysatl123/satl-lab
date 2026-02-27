@@ -1,18 +1,12 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
+import { fmtKSTDate } from '../lib/date';
+import { getRecentBlog, getRecentNotes, getFeaturedProjects } from '../lib/content';
 
-const recentBlog = (await getCollection('blog')).sort(
-  (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
-).slice(0, 3);
-
-const recentNotes = (await getCollection('notes')).sort(
-  (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
-).slice(0, 3);
-
-const featuredProjects = (await getCollection('projects')).filter(
-  (p) => p.data.featured
-).slice(0, 3);
+// ✅ 캐시된 정렬 결과 재사용 (정렬/필터 1회화)
+const recentBlog = await getRecentBlog(3);
+const recentNotes = await getRecentNotes(3);
+const featuredProjects = await getFeaturedProjects(3);
 
 const categories = [
   "Signals & Systems",
@@ -101,7 +95,7 @@ const categories = [
                 style="background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px); background-size: 16px 16px;">
               </div>
               <h3 class="relative font-semibold text-white">{post.data.title}</h3>
-              <p class="relative mt-1 text-sm text-neutral-500 font-mono">{post.data.date}</p>
+              <p class="relative mt-1 text-sm text-neutral-500 font-mono">{fmtKSTDate(post.data.date)}</p>
             </a>
           ))}
         </div>
@@ -124,7 +118,7 @@ const categories = [
                 style="background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px); background-size: 16px 16px;">
               </div>
               <h3 class="relative font-semibold text-white">{post.data.title}</h3>
-              <p class="relative mt-1 text-sm text-neutral-500 font-mono">{post.data.date}</p>
+              <p class="relative mt-1 text-sm text-neutral-500 font-mono">{fmtKSTDate(post.data.date)}</p>
             </a>
           ))}
         </div>

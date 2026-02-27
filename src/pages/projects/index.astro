@@ -1,11 +1,11 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
+import { fmtKSTDate } from '../../lib/date';
+import { getProjects } from '../../lib/content';
 
-const allProjects = (await getCollection('projects')).sort(
-  (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
-);
+const allProjects = await getProjects();
 
+// status별 분류 (O(n) 1회)
 const featured = allProjects.filter((p) => p.data.status === 'featured');
 const completed = allProjects.filter((p) => p.data.status === 'completed');
 const inProgress = allProjects.filter((p) => p.data.status === 'in-progress');
@@ -67,7 +67,7 @@ const statusConfig = [
                       <span class={`text-xs font-mono ${section.color}`}>{post.data.status}</span>
                     </div>
                     <h3 class="relative mt-2 text-lg font-semibold text-white">{post.data.title}</h3>
-                    <p class="relative mt-1 text-sm text-neutral-500 font-mono">{post.data.date}</p>
+                    <p class="relative mt-1 text-sm text-neutral-500 font-mono">{fmtKSTDate(post.data.date)}</p>
                     {post.data.description && (
                       <p class="relative mt-2 text-sm text-neutral-400">{post.data.description}</p>
                     )}

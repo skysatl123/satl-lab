@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { getCollection, render } from 'astro:content';
+import { fmtKSTDate } from '../../lib/date';
 
 export async function getStaticPaths() {
   const posts = await getCollection('research');
@@ -21,7 +22,7 @@ const { Content } = await render(post);
     </a>
 
     <h1 class="mt-4 text-3xl font-bold">{post.data.title}</h1>
-    <p class="mt-2 text-sm text-neutral-500">{post.data.date}</p>
+    <p class="mt-2 text-sm text-neutral-500">{fmtKSTDate(post.data.date)}</p>
 
     <div class="mt-8 prose prose-invert max-w-none">
       <Content />

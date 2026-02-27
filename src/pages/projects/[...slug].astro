@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { getCollection, render } from 'astro:content';
+import { fmtKSTDate } from '../../lib/date';
 
 export async function getStaticPaths() {
   const posts = await getCollection('projects');
@@ -22,7 +23,7 @@ const { Content } = await render(post);
 
     <div class="mt-4 flex items-center gap-3">
       <span class="rounded-full border border-neutral-600 px-2 py-0.5 text-xs text-neutral-400">{post.data.category}</span>
-      <span class="text-sm text-neutral-500">{post.data.date}</span>
+      <span class="text-sm text-neutral-500">{fmtKSTDate(post.data.date)}</span>
     </div>
 
     <h1 class="mt-3 text-3xl font-bold">{post.data.title}</h1>

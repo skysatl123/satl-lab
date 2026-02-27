@@ -1,10 +1,9 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
+import { fmtKSTDate } from '../../lib/date';
+import { getBlogPosts } from '../../lib/content';
 
-const posts = (await getCollection('blog')).sort(
-  (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
-);
+const posts = await getBlogPosts();
 ---
 
 <Layout title="Blog | SATL Lab">
@@ -23,7 +22,7 @@ const posts = (await getCollection('blog')).sort(
         {posts.map((post) => (
           <a href={`/blog/${post.id}`} class="block rounded border border-neutral-800 bg-neutral-900 px-5 py-4 no-underline transition hover:border-neutral-600">
             <h2 class="text-lg font-semibold text-white">{post.data.title}</h2>
-            <p class="mt-1 text-sm text-neutral-500">{post.data.date}</p>
+            <p class="mt-1 text-sm text-neutral-500">{fmtKSTDate(post.data.date)}</p>
             {post.data.description && (
               <p class="mt-2 text-sm text-neutral-400">{post.data.description}</p>
             )}
