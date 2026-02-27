@@ -1,38 +1,7 @@
 <button
   id="theme-toggle"
-  class="rounded-full border border-neutral-700 bg-neutral-900 px-3 py-1 text-xs text-neutral-300 transition hover:bg-neutral-800"
+  class="rounded-full border border-neutral-700 bg-neutral-900 px-3 py-1 text-xs text-neutral-300 transition hover:bg-neutral-800 cursor-pointer"
   aria-label="Toggle theme"
 >
-  <span id="theme-icon"></span>
+  🌙
 </button>
-
-<script is:inline>
-  (function() {
-    var toggle = document.getElementById('theme-toggle');
-    var icon = document.getElementById('theme-icon');
-    var html = document.documentElement;
-
-    function getTheme() {
-      try {
-        return localStorage.getItem('theme') || 'dark';
-      } catch(e) {
-        return 'dark';
-      }
-    }
-
-    function applyTheme(theme) {
-      html.className = theme;
-      icon.textContent = theme === 'dark' ? '🌙' : '☀️';
-    }
-
-    applyTheme(getTheme());
-
-    toggle.addEventListener('click', function() {
-      var next = getTheme() === 'dark' ? 'light' : 'dark';
-      try {
-        localStorage.setItem('theme', next);
-      } catch(e) {}
-      applyTheme(next);
-    });
-  })();
-</script>
