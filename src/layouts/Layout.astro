@@ -38,8 +38,8 @@ const { title = "SATL Lab" } = Astro.props;
     <Footer />
     <script is:inline>
       document.addEventListener('DOMContentLoaded', function() {
-        var btn = document.getElementById('theme-toggle');
-        if (!btn) return;
+        var buttons = document.querySelectorAll('.theme-toggle');
+        if (buttons.length === 0) return;
 
         function getTheme() {
           try { return localStorage.getItem('theme') || 'dark'; }
@@ -48,15 +48,19 @@ const { title = "SATL Lab" } = Astro.props;
 
         function applyTheme(theme) {
           document.documentElement.className = theme;
-          btn.textContent = theme === 'dark' ? '🌙' : '☀️';
+          buttons.forEach(function(btn) {
+            btn.textContent = theme === 'dark' ? '🌙' : '☀️';
+          });
         }
 
         applyTheme(getTheme());
 
-        btn.addEventListener('click', function() {
-          var next = getTheme() === 'dark' ? 'light' : 'dark';
-          try { localStorage.setItem('theme', next); } catch(e) {}
-          applyTheme(next);
+        buttons.forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            var next = getTheme() === 'dark' ? 'light' : 'dark';
+            try { localStorage.setItem('theme', next); } catch(e) {}
+            applyTheme(next);
+          });
         });
       });
     </script>
