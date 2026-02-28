@@ -11,9 +11,15 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# env
+# environment variables
 .env
 .env.*
+.dev.vars*
+.wrangler/
+
+# keep examples
+!.env.example
+!.dev.vars.example
 
 # OS / editor
 .DS_Store
