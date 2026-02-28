@@ -11,13 +11,15 @@
     "cf-typegen": "wrangler types"
   },
   "dependencies": {
+    "@astrojs/check": "^0.9.6",
     "@astrojs/cloudflare": "^12.6.12",
     "@astrojs/mdx": "^4.3.13",
     "@tailwindcss/vite": "^4.2.1",
     "astro": "^5.17.1",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
-    "tailwindcss": "^4.2.1"
+    "tailwindcss": "^4.2.1",
+    "typescript": "^5.9.3"
   },
   "devDependencies": {
     "wrangler": "^4.69.0"

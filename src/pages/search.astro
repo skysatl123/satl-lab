@@ -1,0 +1,267 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Search | SATL Lab">
+  <main class="mx-auto max-w-3xl px-4 py-12">
+    <h1 class="text-3xl font-bold">Search</h1>
+    <p class="mt-2 text-neutral-400">블로그/노트/프로젝트/리서치 전체를 검색합니다.</p>
+
+    <div class="mt-6 flex gap-2">
+      <input
+        id="q"
+        class="w-full rounded border border-neutral-800 bg-neutral-900 px-4 py-2 text-neutral-200 outline-none focus:border-cyan-800"
+        placeholder="예: laplace, RC, FFT, agni..."
+        autocomplete="off"
+      />
+      <select
+        id="type"
+        class="rounded border border-neutral-800 bg-neutral-900 px-3 py-2 text-neutral-200 outline-none focus:border-cyan-800"
+      >
+        <option value="all">all</option>
+        <option value="blog">blog</option>
+        <option value="notes">notes</option>
+        <option value="projects">projects</option>
+        <option value="research">research</option>
+      </select>
+    </div>
+
+    <div id="meta" class="mt-3 text-xs text-neutral-500 font-mono"></div>
+
+    <div id="results" class="mt-6 space-y-3"></div>
+  </main>
+
+  <script is:inline>
+    const $q = document.getElementById("q");
+    const $type = document.getElementById("type");
+    const $results = document.getElementById("results");
+    const $meta = document.getElementById("meta");
+
+    // ── Date formatter (singleton) + cache ──
+    const dtf = new Intl.DateTimeFormat("ko-KR", {
+      timeZone: "Asia/Seoul",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      weekday: "short",
+    });
+
+    const dateCache = Object.create(null);
+    function fmtDate(iso) {
+      if (dateCache[iso]) return dateCache[iso];
+      try {
+        dateCache[iso] = dtf.format(new Date(iso));
+      } catch {
+        dateCache[iso] = iso;
+      }
+      return dateCache[iso];
+    }
+
+    // ── Text helpers ──
+    function normalize(s) {
+      return (s || "").toLowerCase().replace(/\s+/g, " ").trim();
+    }
+
+    // basic HTML escape for safety
+    function escapeHtml(s) {
+      return String(s || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // ✅ Highlight matched tokens (safe: highlight after escaping)
+    function highlight(text, tokens) {
+      let safe = escapeHtml(text);
+      for (let i = 0; i < tokens.length; i++) {
+        const raw = tokens[i];
+        if (!raw) continue;
+
+        // 너무 짧은 토큰(1글자)은 도배될 수 있어서 스킵(원하면 1로 바꿔도 됨)
+        if (raw.length < 2) continue;
+
+        const escaped = raw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const re = new RegExp("(" + escaped + ")", "gi");
+        safe = safe.replace(
+          re,
+          '<mark class="bg-cyan-900/40 text-cyan-300 rounded px-0.5">$1</mark>'
+        );
+      }
+      return safe;
+    }
+
+    // ── Data ──
+    let indexed = []; // [{ doc, type, ts, title, tags, desc, text }]
+
+    async function load() {
+      const res = await fetch("/search-index.json", { cache: "no-cache" });
+      const data = await res.json();
+      const docs = data.docs || [];
+
+      indexed = docs.map((d) => {
+        const ts = Date.parse(d.date) || 0;
+        return {
+          doc: d, // ✅ direct reference (prevents mismatch after sorting)
+          type: d.type,
+          ts,
+          title: normalize(d.title),
+          tags: normalize((d.tags || []).join(" ")),
+          desc: normalize(d.description || ""),
+          text: normalize(d.text || ""),
+        };
+      });
+
+      // sort once by recency
+      indexed.sort((a, b) => b.ts - a.ts);
+
+      $meta.textContent =
+        (data.generatedAt ? "index: " + data.generatedAt + " · " : "") +
+        "docs: " + indexed.length;
+    }
+
+    // ── Scoring ──
+    function score(idx, tokens) {
+      let s = 0;
+      for (let j = 0; j < tokens.length; j++) {
+        const t = tokens[j];
+        if (!t) continue;
+        if (idx.title.indexOf(t) !== -1) s += 8;
+        if (idx.tags.indexOf(t) !== -1) s += 5;
+        if (idx.desc.indexOf(t) !== -1) s += 3;
+        if (idx.text.indexOf(t) !== -1) s += 1;
+      }
+      return s;
+    }
+
+    // ── Rendering ──
+    function renderDocs(list, tokens) {
+      if (!list.length) {
+        $results.innerHTML =
+          '<div class="rounded border border-neutral-800 bg-neutral-900 p-6 text-neutral-500">검색 결과가 없습니다.</div>';
+        return;
+      }
+
+      const toks = tokens || [];
+      const html = [];
+
+      for (let k = 0; k < list.length; k++) {
+        const d = list[k];
+
+        const titleHtml = toks.length ? highlight(d.title, toks) : escapeHtml(d.title);
+        const descHtml = d.description
+          ? (toks.length ? highlight(d.description, toks) : escapeHtml(d.description))
+          : "";
+
+        const badge =
+          '<span class="rounded border border-neutral-700 px-2 py-0.5 text-xs text-neutral-400">' +
+          escapeHtml(d.type) +
+          "</span>";
+
+        let tagsHtml = "";
+        if (d.tags && d.tags.length) {
+          const t = d.tags.slice(0, 6);
+          const parts = [];
+          for (let m = 0; m < t.length; m++) {
+            parts.push(
+              '<span class="rounded-full border border-neutral-700 px-2 py-0.5 text-xs text-neutral-400">' +
+                escapeHtml(t[m]) +
+                "</span>"
+            );
+          }
+          tagsHtml =
+            '<div class="mt-2 flex flex-wrap gap-2">' +
+            parts.join(" ") +
+            "</div>";
+        }
+
+        html.push(
+          '<a href="' +
+            escapeHtml(d.url) +
+            '" class="block rounded border border-neutral-800 bg-neutral-900 px-5 py-4 no-underline hover:border-neutral-600">' +
+            '<div class="flex items-center justify-between gap-3">' +
+            '<div class="text-white font-semibold">' +
+            titleHtml +
+            "</div>" +
+            badge +
+            "</div>" +
+            '<div class="mt-1 text-sm text-neutral-500 font-mono">' +
+            escapeHtml(fmtDate(d.date)) +
+            "</div>" +
+            (descHtml
+              ? '<div class="mt-2 text-sm text-neutral-400">' + descHtml + "</div>"
+              : "") +
+            tagsHtml +
+            "</a>"
+        );
+      }
+
+      $results.innerHTML = html.join("");
+    }
+
+    // ── Query execution ──
+    let timer = null;
+
+    function run() {
+      const q = normalize($q.value);
+      const type = $type.value;
+
+      if (!indexed.length) {
+        renderDocs([], []);
+        return;
+      }
+
+      // empty query: show recent (type-filtered), max 20
+      if (!q) {
+        const out = [];
+        for (let i = 0; i < indexed.length && out.length < 20; i++) {
+          const idx = indexed[i];
+          if (type !== "all" && idx.type !== type) continue;
+          out.push(idx.doc);
+        }
+        renderDocs(out, []);
+        return;
+      }
+
+      const tokens = q.split(" ").filter(Boolean);
+
+      const results = [];
+      for (let i = 0; i < indexed.length; i++) {
+        const idx = indexed[i];
+        if (type !== "all" && idx.type !== type) continue;
+
+        const s = score(idx, tokens);
+        if (s > 0) results.push({ s, ts: idx.ts, doc: idx.doc });
+      }
+
+      results.sort((a, b) => b.s - a.s || b.ts - a.ts);
+
+      const out = [];
+      const len = Math.min(results.length, 40);
+      for (let i = 0; i < len; i++) out.push(results[i].doc);
+
+      renderDocs(out, tokens);
+    }
+
+    function debouncedRun() {
+      clearTimeout(timer);
+      timer = setTimeout(run, 150);
+    }
+
+    // ── Init ──
+    (async function () {
+      try {
+        await load();
+        run();
+      } catch (e) {
+        console.error(e);
+        $meta.textContent = "search index load failed";
+        renderDocs([], []);
+      }
+    })();
+
+    $q.addEventListener("input", debouncedRun);
+    $type.addEventListener("change", run);
+  </script>
+</Layout>
