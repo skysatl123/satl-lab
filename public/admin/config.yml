@@ -21,16 +21,12 @@ collections:
     fields:
       - { label: "Title", name: "title", widget: "string" }
 
-      # ✅ 공개 여부 (기본 draft)
-      - label: "Visibility"
-        name: "status"
-        widget: "select"
-        options: ["draft", "published"]
-        default: "draft"
+      # ✅ frontmatter에 무조건 문자열로 저장되게 (draft/published)
+      - { label: "Visibility (draft/published)", name: "status", widget: "string", default: "draft" }
 
-      # ✅ 날짜: 기존 date도 호환되지만, 앞으로는 publishedAt 권장
-      - { label: "Published At", name: "publishedAt", widget: "datetime", format: "YYYY-MM-DD", default: "", required: false }
-      - { label: "Updated At", name: "updatedAt", widget: "datetime", format: "YYYY-MM-DD", required: false }
+      # ✅ default 제거: 빈 문자열("") 저장을 줄임
+      - { label: "Published At (optional)", name: "publishedAt", widget: "datetime", format: "YYYY-MM-DD", required: false }
+      - { label: "Updated At (optional)", name: "updatedAt", widget: "datetime", format: "YYYY-MM-DD", required: false }
 
       - label: "Topic"
         name: "topic"
@@ -44,18 +40,18 @@ collections:
         options: ["theory", "study-log", "idea", "reference"]
         default: "study-log"
 
-      - label: "Difficulty"
+      - label: "Difficulty (optional)"
         name: "difficulty"
         widget: "select"
         options: ["intro", "intermediate", "advanced"]
         required: false
 
-      - { label: "Summary", name: "summary", widget: "string", required: false }
-      - { label: "Tags", name: "tags", widget: "list", required: false }
+      - { label: "Summary (optional)", name: "summary", widget: "string", required: false }
+      - { label: "Tags (optional)", name: "tags", widget: "list", required: false }
 
-      - { label: "Series", name: "series", widget: "string", required: false }
-      - { label: "Cover Image", name: "cover", widget: "image", required: false }
-      - { label: "Canonical URL", name: "canonical", widget: "string", required: false }
+      - { label: "Series (optional)", name: "series", widget: "string", required: false }
+      - { label: "Cover Image (optional)", name: "cover", widget: "image", required: false }
+      - { label: "Canonical URL (optional)", name: "canonical", widget: "string", required: false }
 
       - { label: "Body", name: "body", widget: "markdown" }
 
@@ -71,36 +67,31 @@ collections:
     fields:
       - { label: "Title", name: "title", widget: "string" }
 
-      # ✅ 공개 여부
-      - label: "Visibility"
-        name: "status"
-        widget: "select"
-        options: ["draft", "published"]
-        default: "draft"
+      # ✅ frontmatter에 무조건 문자열로 저장되게
+      - { label: "Visibility (draft/published)", name: "status", widget: "string", default: "draft" }
 
-      - { label: "Published At", name: "publishedAt", widget: "datetime", format: "YYYY-MM-DD", required: false }
-      - { label: "Updated At", name: "updatedAt", widget: "datetime", format: "YYYY-MM-DD", required: false }
+      - { label: "Published At (optional)", name: "publishedAt", widget: "datetime", format: "YYYY-MM-DD", required: false }
+      - { label: "Updated At (optional)", name: "updatedAt", widget: "datetime", format: "YYYY-MM-DD", required: false }
 
-      # (선택) category는 유지(기존 호환)
-      - label: "Category"
+      - label: "Category (optional)"
         name: "category"
         widget: "select"
         options: ["Signals & Systems", "Electronic Circuits", "Circuits Lab", "EM / RF", "Semiconductor Devices"]
         required: false
 
-      # ✅ 프로젝트 진행 상태는 projectStatus로!
+      # ✅ 진행 상태는 projectStatus
       - label: "Project Status"
         name: "projectStatus"
         widget: "select"
         options: ["featured", "completed", "in-progress", "archived"]
         default: "in-progress"
 
-      - { label: "Summary", name: "summary", widget: "string", required: false }
-      - { label: "Tags", name: "tags", widget: "list", required: false }
+      - { label: "Summary (optional)", name: "summary", widget: "string", required: false }
+      - { label: "Tags (optional)", name: "tags", widget: "list", required: false }
 
       - { label: "Featured (pin)", name: "featured", widget: "boolean", default: false, required: false }
-      - { label: "Cover Image", name: "cover", widget: "image", required: false }
-      - { label: "Canonical URL", name: "canonical", widget: "string", required: false }
+      - { label: "Cover Image (optional)", name: "cover", widget: "image", required: false }
+      - { label: "Canonical URL (optional)", name: "canonical", widget: "string", required: false }
 
       - { label: "Body", name: "body", widget: "markdown" }
 
@@ -116,15 +107,11 @@ collections:
     fields:
       - { label: "Title", name: "title", widget: "string" }
 
-      # ✅ 공개 여부 (기본 draft)
-      - label: "Visibility"
-        name: "status"
-        widget: "select"
-        options: ["draft", "published"]
-        default: "draft"
+      # ✅ frontmatter에 무조건 문자열로 저장되게
+      - { label: "Visibility (draft/published)", name: "status", widget: "string", default: "draft" }
 
-      - { label: "Published At", name: "publishedAt", widget: "datetime", format: "YYYY-MM-DD", required: false }
-      - { label: "Updated At", name: "updatedAt", widget: "datetime", format: "YYYY-MM-DD", required: false }
+      - { label: "Published At (optional)", name: "publishedAt", widget: "datetime", format: "YYYY-MM-DD", required: false }
+      - { label: "Updated At (optional)", name: "updatedAt", widget: "datetime", format: "YYYY-MM-DD", required: false }
 
       - label: "Lab Type"
         name: "labType"
@@ -132,19 +119,19 @@ collections:
         options: ["전자회로실험", "PSPICE", "실습", "과제", "시뮬레이션", "측정/계측", "기타"]
         default: "기타"
 
-      - { label: "Course", name: "course", widget: "string", required: false }
-      - { label: "Tools", name: "tools", widget: "list", required: false }
-      - { label: "Parts", name: "parts", widget: "list", required: false }
+      - { label: "Course (optional)", name: "course", widget: "string", required: false }
+      - { label: "Tools (optional)", name: "tools", widget: "list", required: false }
+      - { label: "Parts (optional)", name: "parts", widget: "list", required: false }
 
-      - label: "Result"
+      - label: "Result (optional)"
         name: "result"
         widget: "select"
         options: ["success", "partial", "fail"]
         required: false
 
-      - { label: "Attachments", name: "attachments", widget: "list", required: false }
-      - { label: "Summary", name: "summary", widget: "string", required: false }
-      - { label: "Tags", name: "tags", widget: "list", required: false }
+      - { label: "Attachments (optional)", name: "attachments", widget: "list", required: false }
+      - { label: "Summary (optional)", name: "summary", widget: "string", required: false }
+      - { label: "Tags (optional)", name: "tags", widget: "list", required: false }
 
       - { label: "Body", name: "body", widget: "markdown" }
 
@@ -160,23 +147,19 @@ collections:
     fields:
       - { label: "Title", name: "title", widget: "string" }
 
-      # ✅ 공개 여부
-      - label: "Visibility"
-        name: "status"
-        widget: "select"
-        options: ["draft", "published"]
-        default: "draft"
+      # ✅ frontmatter에 무조건 문자열로 저장되게
+      - { label: "Visibility (draft/published)", name: "status", widget: "string", default: "draft" }
 
-      - { label: "Published At", name: "publishedAt", widget: "datetime", format: "YYYY-MM-DD", required: false }
-      - { label: "Updated At", name: "updatedAt", widget: "datetime", format: "YYYY-MM-DD", required: false }
+      - { label: "Published At (optional)", name: "publishedAt", widget: "datetime", format: "YYYY-MM-DD", required: false }
+      - { label: "Updated At (optional)", name: "updatedAt", widget: "datetime", format: "YYYY-MM-DD", required: false }
 
-      - label: "Type"
+      - label: "Type (optional)"
         name: "type"
         widget: "select"
         options: ["reading", "experiment", "weekly", "output"]
         required: false
 
-      - { label: "Summary", name: "summary", widget: "string", required: false }
-      - { label: "Tags", name: "tags", widget: "list", required: false }
+      - { label: "Summary (optional)", name: "summary", widget: "string", required: false }
+      - { label: "Tags (optional)", name: "tags", widget: "list", required: false }
 
       - { label: "Body", name: "body", widget: "markdown" }
