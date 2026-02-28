@@ -1,23 +1,15 @@
 ---
-import Layout from "../../layouts/Layout.astro";
-import { fmtKSTDate } from "../../lib/date";
-import { getProjects } from "../../lib/content";
+import Layout from '../../layouts/Layout.astro';
+import { fmtKSTDate } from '../../lib/date';
+import { getProjects } from '../../lib/content';
 
 const allProjects = await getProjects();
 
-// ✅ projectStatus 기준으로 1회 순회 분류 (O(n))
-type PStatus = "featured" | "completed" | "in-progress" | "archived";
-const buckets: Record<PStatus, typeof allProjects> = {
-  featured: [],
-  completed: [],
-  "in-progress": [],
-  archived: [],
-};
-
-for (const p of allProjects) {
-  const s = (p.data.projectStatus ?? "in-progress") as PStatus;
-  (buckets[s] ?? buckets["in-progress"]).push(p);
-}
+// status별 분류 (O(n) 1회)
+const featured = allProjects.filter((p) => p.data.status === 'featured');
+const completed = allProjects.filter((p) => p.data.status === 'completed');
+const inProgress = allProjects.filter((p) => p.data.status === 'in-progress');
+const archived = allProjects.filter((p) => p.data.status === 'archived');
 
 const categories = [
   "Signals & Systems",
@@ -27,131 +19,64 @@ const categories = [
   "Semiconductor Devices",
 ];
 
-// ✅ 상태 UI 설정 (라이트/다크 대비 포함)
 const statusConfig = [
-  {
-    key: "featured" as const,
-    label: "Featured",
-    titleClass: "text-cyan-700 dark:text-cyan-300",
-    dotClass: "bg-cyan-500",
-    borderClass: "border-cyan-300 dark:border-cyan-800",
-  },
-  {
-    key: "completed" as const,
-    label: "Completed",
-    titleClass: "text-green-700 dark:text-green-300",
-    dotClass: "bg-green-500",
-    borderClass: "border-green-300 dark:border-green-800",
-  },
-  {
-    key: "in-progress" as const,
-    label: "In Progress",
-    titleClass: "text-yellow-700 dark:text-yellow-300",
-    dotClass: "bg-yellow-500",
-    borderClass: "border-yellow-300 dark:border-yellow-800",
-  },
-  {
-    key: "archived" as const,
-    label: "Archived",
-    titleClass: "text-neutral-700 dark:text-neutral-400",
-    dotClass: "bg-neutral-400 dark:bg-neutral-500",
-    borderClass: "border-neutral-300 dark:border-neutral-700",
-  },
+  { label: "★ Featured", color: "text-cyan-400", border: "border-cyan-800", items: featured },
+  { label: "● Completed", color: "text-green-400", border: "border-green-800", items: completed },
+  { label: "◐ In Progress", color: "text-yellow-400", border: "border-yellow-800", items: inProgress },
+  { label: "○ Archived", color: "text-neutral-500", border: "border-neutral-700", items: archived },
 ];
 ---
 
 <Layout title="Projects | SATL Lab">
   <main class="mx-auto max-w-4xl px-4 py-12">
-    <h1 class="text-3xl font-bold text-neutral-900 dark:text-white">Projects</h1>
-    <p class="mt-2 text-neutral-600 dark:text-neutral-400">
-      완성된 프로젝트를 상태/카테고리별로 정리합니다.
-    </p>
+    <h1 class="text-3xl font-bold">Projects</h1>
+    <p class="mt-2 text-neutral-400">완성된 프로젝트를 상태/카테고리별로 정리합니다.</p>
 
     <div class="mt-6 flex flex-wrap gap-2">
       {categories.map((cat) => (
-        <span
-          class="rounded-full border border-neutral-300 bg-white/60 px-3 py-1 text-xs text-neutral-700 font-mono
-                 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
-        >
-          {cat}
-        </span>
+        <span class="rounded-full border border-neutral-700 bg-neutral-900 px-3 py-1 text-xs text-neutral-300 font-mono">{cat}</span>
       ))}
     </div>
 
-    <!-- Status Legend (no emoji, light/dark friendly) -->
+    <!-- Status Legend -->
     <div class="mt-6 flex flex-wrap gap-4 text-xs font-mono">
-      {statusConfig.map((s) => (
-        <span class={`inline-flex items-center gap-2 ${s.titleClass}`}>
-          <span class={`inline-block h-2 w-2 rounded-full ${s.dotClass}`}></span>
-          {s.label}
-        </span>
-      ))}
+      <span class="text-cyan-400">★ Featured</span>
+      <span class="text-green-400">● Completed</span>
+      <span class="text-yellow-400">◐ In Progress</span>
+      <span class="text-neutral-500">○ Archived</span>
     </div>
 
     {allProjects.length === 0 ? (
-      <div
-        class="mt-10 rounded border border-neutral-300 bg-white/60 p-8 text-center text-neutral-600 font-mono text-sm
-               dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-500"
-      >
+      <div class="mt-10 rounded border border-neutral-800 bg-neutral-900 p-8 text-center text-neutral-500 font-mono text-sm">
         // no projects yet
       </div>
     ) : (
       <div class="mt-8 space-y-12">
-        {statusConfig.map((section) => {
-          const items = buckets[section.key];
-          return (
-            items.length > 0 && (
-              <div>
-                <h2 class={`text-lg font-semibold font-mono ${section.titleClass}`}>
-                  {section.label}
-                </h2>
-
-                <div class="mt-4 space-y-4">
-                  {items.map((post) => (
-                    <a
-                      href={`/projects/${post.id}`}
-                      class={`group relative block overflow-hidden rounded border ${section.borderClass}
-                              bg-white/70 px-5 py-4 no-underline transition hover:border-neutral-500
-                              dark:bg-neutral-900`}
-                    >
-                      <div
-                        class="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-[0.04]"
-                        style="background-image: linear-gradient(rgba(0,0,0,0.35) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.35) 1px, transparent 1px); background-size: 16px 16px;"
-                      />
-
-                      <div class="relative flex items-center gap-3">
-                        <span
-                          class="rounded-full border border-neutral-300 bg-white/60 px-2 py-0.5 text-xs text-neutral-700 font-mono
-                                 dark:border-neutral-600 dark:bg-transparent dark:text-neutral-400"
-                        >
-                          {post.data.category}
-                        </span>
-
-                        <span class={`text-xs font-mono ${section.titleClass}`}>
-                          {post.data.projectStatus ?? "in-progress"}
-                        </span>
-                      </div>
-
-                      <h3 class="relative mt-2 text-lg font-semibold text-neutral-900 dark:text-white">
-                        {post.data.title}
-                      </h3>
-
-                      <p class="relative mt-1 text-sm text-neutral-600 dark:text-neutral-500 font-mono">
-                        {fmtKSTDate(post.data.publishedAt)}
-                      </p>
-
-                      {(post.data.summary ?? post.data.description) && (
-                        <p class="relative mt-2 text-sm text-neutral-700 dark:text-neutral-400">
-                          {post.data.summary ?? post.data.description}
-                        </p>
-                      )}
-                    </a>
-                  ))}
-                </div>
+        {statusConfig.map((section) => (
+          section.items.length > 0 && (
+            <div>
+              <h2 class={`text-lg font-semibold font-mono ${section.color}`}>{section.label}</h2>
+              <div class="mt-4 space-y-4">
+                {section.items.map((post) => (
+                  <a href={`/projects/${post.id}`} class={`group relative block overflow-hidden rounded border ${section.border} bg-neutral-900 px-5 py-4 no-underline transition hover:border-neutral-500`}>
+                    <div class="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-[0.04]"
+                      style="background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px); background-size: 16px 16px;">
+                    </div>
+                    <div class="relative flex items-center gap-3">
+                      <span class="rounded-full border border-neutral-600 px-2 py-0.5 text-xs text-neutral-400 font-mono">{post.data.category}</span>
+                      <span class={`text-xs font-mono ${section.color}`}>{post.data.status}</span>
+                    </div>
+                    <h3 class="relative mt-2 text-lg font-semibold text-white">{post.data.title}</h3>
+                    <p class="relative mt-1 text-sm text-neutral-500 font-mono">{fmtKSTDate(post.data.date)}</p>
+                    {post.data.description && (
+                      <p class="relative mt-2 text-sm text-neutral-400">{post.data.description}</p>
+                    )}
+                  </a>
+                ))}
               </div>
-            )
-          );
-        })}
+            </div>
+          )
+        ))}
       </div>
     )}
   </main>
