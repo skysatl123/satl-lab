@@ -185,3 +185,30 @@ html.light select option {
   background-color: #ffffff;
   color: #171717;
 }
+
+/* ---------------------------------------------------------
+   Preserve status colors in light mode
+   --------------------------------------------------------- */
+html.light .text-cyan-400 {
+  color: #22d3ee !important;
+}
+
+html.light .text-green-400 {
+  color: #4ade80 !important;
+}
+
+html.light .text-yellow-400 {
+  color: #facc15 !important;
+}
+
+html.light .border-cyan-800 {
+  border-color: #155e75 !important;
+}
+
+html.light .border-green-800 {
+  border-color: #166534 !important;
+}
+
+html.light .border-yellow-800 {
+  border-color: #854d0e !important;
+}
