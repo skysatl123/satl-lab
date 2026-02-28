@@ -1,57 +1,72 @@
 // src/lib/content.ts
 import { getCollection, type CollectionEntry } from "astro:content";
 
-
-// ✅ 항상 "T의 서브타입"이 되도록 교집합 형태로 좁힘
-export type WithRequiredDate<T extends { data: any }> =
-  T & { data: T["data"] & { date: Date } };
-
-export function hasDate<T extends { data: { date?: unknown } }>(
-  e: T
-): e is WithRequiredDate<T> {
-  return e.data.date instanceof Date;
-}
-
-export function byDateDesc<T extends { data: { date: Date } }>(a: T, b: T) {
-  return b.data.date.getTime() - a.data.date.getTime();
-}
-
-// --- collection types ---
+/** ---- Types ---- */
 export type BlogPost = CollectionEntry<"blog">;
 export type NotePost = CollectionEntry<"notes">;
 export type ProjectPost = CollectionEntry<"projects">;
+export type ResearchPost = CollectionEntry<"research">;
 
-// --- caches (sorted, date-guaranteed) ---
-let blogCache: WithRequiredDate<BlogPost>[] | null = null;
-let notesCache: WithRequiredDate<NotePost>[] | null = null;
-let projectsCache: WithRequiredDate<ProjectPost>[] | null = null;
+type Status = "draft" | "published";
 
-// --- getters ---
-export async function getBlogPosts() {
-  if (!blogCache) {
-    const posts = await getCollection("blog");
-    blogCache = posts.filter(hasDate).sort(byDateDesc);
-  }
-  return blogCache;
+/** content.config.ts에서 normalizeMeta로 publishedAt을 항상 채움 */
+type WithPublishedAt<T extends { data: any }> =
+  T & { data: T["data"] & { publishedAt: Date; status: Status } };
+
+function byPublishedAtDesc<T extends { data: { publishedAt: Date } }>(a: T, b: T) {
+  return b.data.publishedAt.getTime() - a.data.publishedAt.getTime();
 }
 
-export async function getNotes() {
-  if (!notesCache) {
-    const posts = await getCollection("notes");
-    notesCache = posts.filter(hasDate).sort(byDateDesc);
-  }
-  return notesCache;
+function isPublished<T extends { data: { status: Status } }>(e: T) {
+  return e.data.status === "published";
 }
 
-export async function getProjects() {
-  if (!projectsCache) {
-    const posts = await getCollection("projects");
-    projectsCache = posts.filter(hasDate).sort(byDateDesc);
-  }
-  return projectsCache;
+/**
+ * ✅ Generic cached getter
+ * - 각 컬렉션당 정렬은 1회(O(n log n))
+ * - published 필터도 1회(O(n)) 후 캐시
+ * - 페이지/컴포넌트에서 반복 로직 제거
+ */
+function makeCachedGetter<K extends "blog" | "notes" | "projects" | "research">(key: K) {
+  let cacheAll: WithPublishedAt<CollectionEntry<K>>[] | null = null;
+  let cachePublished: WithPublishedAt<CollectionEntry<K>>[] | null = null;
+
+  const loadAll = async () => {
+    if (!cacheAll) {
+      const entries = await getCollection(key);
+      cacheAll = (entries as WithPublishedAt<CollectionEntry<K>>[]).sort(byPublishedAtDesc);
+    }
+    return cacheAll;
+  };
+
+  const loadPublished = async () => {
+    if (!cachePublished) {
+      const entries = await loadAll();
+      cachePublished = entries.filter(isPublished);
+    }
+    return cachePublished;
+  };
+
+  return { loadAll, loadPublished };
 }
 
-// --- derived helpers ---
+/** ---- Getters ---- */
+const blogGetter = makeCachedGetter("blog");
+const notesGetter = makeCachedGetter("notes");
+const projectsGetter = makeCachedGetter("projects");
+const researchGetter = makeCachedGetter("research");
+
+// ✅ 사이트 노출용: published만
+export const getBlogPosts = () => blogGetter.loadPublished();
+export const getNotes = () => notesGetter.loadPublished();
+export const getProjects = () => projectsGetter.loadPublished();
+export const getResearch = () => researchGetter.loadPublished();
+
+// ✅ 내부/관리용: draft 포함 전체(필요할 때만 사용)
+export const getAllBlogPosts = () => blogGetter.loadAll();
+export const getAllNotes = () => notesGetter.loadAll();
+
+/** ---- Derived helpers ---- */
 export async function getFeaturedProjects(limit = 3) {
   const projects = await getProjects();
   return projects.filter((p) => p.data.featured).slice(0, limit);
