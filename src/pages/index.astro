@@ -58,6 +58,63 @@ const categories = [
       </div>
     </section>
 
+    <!-- Home Search -->
+    <form
+      id="home-search"
+      class="relative mt-4 mx-auto flex max-w-xl flex-wrap items-center gap-2"
+      action="/search"
+      method="get"
+    >
+      <input
+        id="home-q"
+        name="q"
+        class="flex-1 min-w-[260px] rounded border border-neutral-800 bg-neutral-900/50 px-4 py-2 text-neutral-200 outline-none focus:border-cyan-800 font-mono"
+        placeholder="Search…"
+        autocomplete="off"
+      />
+
+      <select
+        id="home-type"
+        name="type"
+        class="w-32 rounded border border-neutral-800 bg-neutral-900/50 px-3 py-2 text-neutral-200 outline-none focus:border-cyan-800 font-mono"
+      >
+        <option value="all">all</option>
+        <option value="blog">blog</option>
+        <option value="notes">notes</option>
+        <option value="projects">projects</option>
+        <option value="research">research</option>
+      </select>
+
+      <!-- 1) 돋보기: 홈에서 즉시 검색 -->
+      <button
+        type="button"
+        id="home-search-btn"
+        aria-label="Search"
+        title="Search"
+        class="w-11 rounded border border-neutral-800 bg-neutral-900/50 px-3 py-2 text-neutral-200 hover:border-neutral-600"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </button>
+
+      <!-- 2) … : /search로 이동 -->
+      <button
+        type="button"
+        id="home-advanced-btn"
+        aria-label="Open full search"
+        title="Open full search"
+        class="w-11 rounded border border-neutral-800 bg-neutral-900/50 px-3 py-2 text-neutral-200 hover:border-neutral-600 font-mono"
+      >
+        …
+      </button>
+    </form>
+
+<!-- 홈 즉시검색 결과 표시 영역 -->
+<div id="home-search-results" class="mx-auto mt-3 max-w-xl"></div>
+
     <!-- Featured Projects -->
     {featuredProjects.length > 0 && (
       <section class="mt-16">
@@ -127,46 +184,193 @@ const categories = [
 
   </div>
 
-  <!-- Typing effect script -->
-  <script is:inline>
-    document.addEventListener('DOMContentLoaded', function() {
-      var phrases = [
-        'From theory to measurement.',
-        'circuits · signals · silicon.',
-        'Build, measure, explain.',
-        'Reproducible engineering notes.',
-      ];
-      var el = document.getElementById('typed-text');
-      if (!el) return;
-      var phraseIdx = 0;
-      var charIdx = 0;
-      var deleting = false;
+<!-- Typing effect script -->
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', function() {
+    var phrases = [
+      'From theory to measurement.',
+      'circuits · signals · silicon.',
+      'Build, measure, explain.',
+      'Reproducible engineering notes.',
+    ];
+    var el = document.getElementById('typed-text');
+    if (!el) return;
+    var phraseIdx = 0;
+    var charIdx = 0;
+    var deleting = false;
 
-      function tick() {
-        var current = phrases[phraseIdx];
-        if (!deleting) {
-          el.textContent = '> ' + current.substring(0, charIdx + 1) + '_';
-          charIdx++;
-          if (charIdx >= current.length) {
-            deleting = true;
-            setTimeout(tick, 2000);
-            return;
-          }
-          setTimeout(tick, 60);
-        } else {
-          el.textContent = '> ' + current.substring(0, charIdx) + '_';
-          charIdx--;
-          if (charIdx < 0) {
-            deleting = false;
-            charIdx = 0;
-            phraseIdx = (phraseIdx + 1) % phrases.length;
-            setTimeout(tick, 400);
-            return;
-          }
-          setTimeout(tick, 30);
+    function tick() {
+      var current = phrases[phraseIdx];
+      if (!deleting) {
+        el.textContent = '> ' + current.substring(0, charIdx + 1) + '_';
+        charIdx++;
+        if (charIdx >= current.length) {
+          deleting = true;
+          setTimeout(tick, 2000);
+          return;
         }
+        setTimeout(tick, 60);
+      } else {
+        el.textContent = '> ' + current.substring(0, charIdx) + '_';
+        charIdx--;
+        if (charIdx < 0) {
+          deleting = false;
+          charIdx = 0;
+          phraseIdx = (phraseIdx + 1) % phrases.length;
+          setTimeout(tick, 400);
+          return;
+        }
+        setTimeout(tick, 30);
       }
-      tick();
+    }
+    tick();
+  });
+</script>
+
+<!-- Home instant search script (dark-default + light via html.light CSS) -->
+<script is:inline>
+  (function () {
+    var qEl = document.getElementById("home-q");
+    var typeEl = document.getElementById("home-type");
+    var btnSearch = document.getElementById("home-search-btn");
+    var btnAdv = document.getElementById("home-advanced-btn");
+    var outEl = document.getElementById("home-search-results");
+
+    if (!qEl || !typeEl || !btnSearch || !btnAdv || !outEl) return;
+
+    function normalize(s) {
+      return (s || "").toLowerCase().replace(/\s+/g, " ").trim();
+    }
+
+    function escapeHtml(s) {
+      return String(s || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // ── index (preprocess once) ──
+    var indexed = null;
+
+    async function loadIndex() {
+      if (indexed) return indexed;
+
+      var res = await fetch("/search-index.json", { cache: "no-cache" });
+      var data = await res.json();
+      var docs = data.docs || [];
+
+      indexed = docs.map(function (d) {
+        return {
+          doc: d,
+          type: d.type,
+          title: normalize(d.title),
+          tags: normalize((d.tags || []).join(" ")),
+          desc: normalize(d.description || ""),
+          text: normalize(d.text || ""),
+        };
+      });
+
+      return indexed;
+    }
+
+    // ── scoring ──
+    function score(idx, tokens) {
+      var s = 0;
+      for (var j = 0; j < tokens.length; j++) {
+        var t = tokens[j];
+        if (!t) continue;
+        if (idx.title.indexOf(t) !== -1) s += 8;
+        if (idx.tags.indexOf(t) !== -1) s += 5;
+        if (idx.desc.indexOf(t) !== -1) s += 3;
+        if (idx.text.indexOf(t) !== -1) s += 1;
+      }
+      return s;
+    }
+
+    // ── render (dark default; light handled in global.css via html.light) ──
+    function render(list) {
+      if (!list.length) {
+        outEl.innerHTML = "";
+        return;
+      }
+
+      var cards = [];
+      for (var k = 0; k < list.length; k++) {
+        var d = list[k];
+
+        cards.push(
+          '<a class="block rounded border border-neutral-800 bg-neutral-900 px-4 py-2 no-underline ' +
+            'hover:border-neutral-600 transition" ' +
+            'href="' + escapeHtml(d.url) + '">' +
+            '<div class="flex items-center justify-between gap-3">' +
+              '<div class="text-sm font-semibold text-white">' +
+                escapeHtml(d.title) +
+              "</div>" +
+              '<span class="text-xs text-neutral-400 border border-neutral-700 rounded px-2 py-0.5">' +
+                escapeHtml(d.type) +
+              "</span>" +
+            "</div>" +
+          "</a>"
+        );
+      }
+
+      outEl.innerHTML =
+        '<div class="rounded border border-neutral-800 bg-neutral-900/50 backdrop-blur p-3">' +
+          '<div class="space-y-2">' + cards.join("") + "</div>" +
+        "</div>";
+    }
+
+    // ── run search ──
+    async function runInstantSearch() {
+      var q = normalize(qEl.value);
+      var type = typeEl.value;
+
+      if (!q) {
+        outEl.innerHTML = "";
+        return;
+      }
+
+      var tokens = q.split(" ").filter(Boolean);
+      var all = await loadIndex();
+      var results = [];
+
+      for (var i = 0; i < all.length; i++) {
+        if (type !== "all" && all[i].type !== type) continue;
+        var s = score(all[i], tokens);
+        if (s > 0) results.push({ s: s, doc: all[i].doc });
+      }
+
+      results.sort(function (a, b) { return b.s - a.s; });
+
+      var out = [];
+      var len = Math.min(results.length, 5);
+      for (var j = 0; j < len; j++) out.push(results[j].doc);
+
+      render(out);
+    }
+    
+    // 입력 지우면 결과도 즉시 사라지게
+    qEl.addEventListener("input", function () {
+      if (!qEl.value.trim()) outEl.innerHTML = "";
     });
-  </script>
+    
+    // ── events ──
+    btnSearch.addEventListener("click", runInstantSearch);
+
+    qEl.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        runInstantSearch();
+      }
+    });
+
+    btnAdv.addEventListener("click", function () {
+      var q = encodeURIComponent(qEl.value || "");
+      var t = encodeURIComponent(typeEl.value || "all");
+      window.location.href = "/search?q=" + q + "&type=" + t;
+    });
+  })();
+</script>
 </Layout>

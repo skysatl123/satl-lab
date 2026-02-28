@@ -3,20 +3,20 @@ import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title="Search | SATL Lab">
-  <main class="mx-auto max-w-3xl px-4 py-12">
+  <main id="search-page" class="mx-auto max-w-3xl px-4 py-12">
     <h1 class="text-3xl font-bold">Search</h1>
     <p class="mt-2 text-neutral-400">블로그/노트/프로젝트/리서치 전체를 검색합니다.</p>
 
     <div class="mt-6 flex gap-2">
       <input
-        id="q"
-        class="w-full rounded border border-neutral-800 bg-neutral-900 px-4 py-2 text-neutral-200 outline-none focus:border-cyan-800"
-        placeholder="예: laplace, RC, FFT, agni..."
-        autocomplete="off"
-      />
+      id="q"
+      class="w-full rounded border border-neutral-800 bg-neutral-900 px-4 py-2 text-neutral-200 outline-none focus:border-cyan-800 font-mono placeholder:text-neutral-500"
+      placeholder="Search…"
+      autocomplete="off"
+    />
       <select
         id="type"
-        class="rounded border border-neutral-800 bg-neutral-900 px-3 py-2 text-neutral-200 outline-none focus:border-cyan-800"
+        class="rounded border border-neutral-800 bg-neutral-900 px-3 py-2 text-neutral-200 outline-none focus:border-cyan-800 font-mono"
       >
         <option value="all">all</option>
         <option value="blog">blog</option>
@@ -253,6 +253,11 @@ import Layout from "../layouts/Layout.astro";
     (async function () {
       try {
         await load();
+
+        const params = new URLSearchParams(location.search);
+        $q.value = params.get("q") || "";
+        $type.value = params.get("type") || "all";
+
         run();
       } catch (e) {
         console.error(e);
