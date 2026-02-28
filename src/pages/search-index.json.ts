@@ -10,75 +10,86 @@ type SearchDoc = {
   tags: string[];
   date: string; // ISO
   url: string;
-  text: string; // 검색용 텍스트(본문 일부 포함)
+  text: string;
 };
 
 function normalize(s: string) {
-  return s
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .trim();
+  return s.toLowerCase().replace(/\s+/g, " ").trim();
 }
 
 function takeExcerpt(s: string, maxLen = 2000) {
   const cleaned = s
-    .replace(/```[\s\S]*?```/g, " ") // 코드블럭 제거(노이즈 감소)
-    .replace(/<[^>]+>/g, " ")       // HTML 제거
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/<[^>]+>/g, " ")
     .replace(/\s+/g, " ")
     .trim();
   return cleaned.slice(0, maxLen);
 }
 
+function safeIsoDate(value: unknown): string {
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? new Date(0).toISOString() : value.toISOString();
+  }
+  if (value === "" || value === null || value === undefined) {
+    return new Date(0).toISOString();
+  }
+  const d = new Date(value as any);
+  return Number.isNaN(d.getTime()) ? new Date(0).toISOString() : d.toISOString();
+}
+
 export async function GET() {
+  // ✅ published만 인덱싱 (draft 제외)
   const [blog, notes, projects, research] = await Promise.all([
-    getCollection("blog"),
-    getCollection("notes"),
-    getCollection("projects"),
-    getCollection("research").catch(() => []), // 비어있을 때 안전
+    getCollection("blog", ({ data }) => data.status === "published"),
+    getCollection("notes", ({ data }) => data.status === "published"),
+    getCollection("projects", ({ data }) => data.status === "published").catch(() => []),
+    getCollection("research", ({ data }) => data.status === "published").catch(() => []),
   ]);
 
   const docs: SearchDoc[] = [
     ...blog.map((e) => ({
-      id: e.id,
+      id: `blog:${e.id}`,
       type: "blog" as const,
       title: e.data.title ?? "",
-      description: e.data.description,
+      description: e.data.summary ?? e.data.description,
       tags: e.data.tags ?? [],
-      date: (e.data.date instanceof Date ? e.data.date : new Date(e.data.date)).toISOString(),
+      date: safeIsoDate(e.data.publishedAt ?? e.data.date),
       url: `/blog/${e.id}/`,
       text: normalize(
-        `${e.data.title ?? ""}\n${e.data.description ?? ""}\n${(e.data.tags ?? []).join(" ")}\n${takeExcerpt(e.body ?? "")}`
+        `${e.data.title ?? ""}\n${e.data.summary ?? e.data.description ?? ""}\n${(e.data.tags ?? []).join(
+          " "
+        )}\n${takeExcerpt(e.body ?? "")}`
       ),
     })),
     ...notes.map((e) => ({
-      id: e.id,
+      id: `notes:${e.id}`,
       type: "notes" as const,
       title: e.data.title ?? "",
       tags: e.data.tags ?? [],
-      date: (e.data.date instanceof Date ? e.data.date : new Date(e.data.date)).toISOString(),
+      date: safeIsoDate(e.data.publishedAt ?? e.data.date),
       url: `/notes/${e.id}/`,
-      text: normalize(
-        `${e.data.title ?? ""}\n${(e.data.tags ?? []).join(" ")}\n${takeExcerpt(e.body ?? "")}`
-      ),
+      text: normalize(`${e.data.title ?? ""}\n${(e.data.tags ?? []).join(" ")}\n${takeExcerpt(e.body ?? "")}`),
     })),
     ...projects.map((e) => ({
-      id: e.id,
+      id: `projects:${e.id}`,
       type: "projects" as const,
       title: e.data.title ?? "",
-      description: e.data.description,
+      description: e.data.summary ?? e.data.description,
       tags: e.data.tags ?? [],
-      date: (e.data.date instanceof Date ? e.data.date : new Date(e.data.date)).toISOString(),
+      date: safeIsoDate(e.data.publishedAt ?? e.data.date),
       url: `/projects/${e.id}/`,
       text: normalize(
-        `${e.data.title ?? ""}\n${e.data.description ?? ""}\n${e.data.category ?? ""}\n${(e.data.tags ?? []).join(" ")}\n${takeExcerpt(e.body ?? "")}`
+        `${e.data.title ?? ""}\n${e.data.summary ?? e.data.description ?? ""}\n${e.data.category ?? ""}\n${(e.data.tags ?? []).join(
+          " "
+        )}\n${takeExcerpt(e.body ?? "")}`
       ),
     })),
     ...research.map((e: any) => ({
-      id: e.id,
+      id: `research:${e.id}`,
       type: "research" as const,
       title: e.data.title ?? "",
       tags: e.data.tags ?? [],
-      date: (e.data.date instanceof Date ? e.data.date : new Date(e.data.date)).toISOString(),
+      date: safeIsoDate(e.data.publishedAt ?? e.data.date),
       url: `/research/${e.id}/`,
       text: normalize(
         `${e.data.title ?? ""}\n${e.data.type ?? ""}\n${(e.data.tags ?? []).join(" ")}\n${takeExcerpt(e.body ?? "")}`
@@ -86,7 +97,7 @@ export async function GET() {
     })),
   ];
 
-  // 최신 글 우선으로 정렬(검색 결과에도 영향)
+  // 최신 글 우선
   docs.sort((a, b) => (a.date < b.date ? 1 : -1));
 
   return new Response(JSON.stringify({ generatedAt: new Date().toISOString(), docs }), {
