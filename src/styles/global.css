@@ -293,3 +293,39 @@ html.light .opacity-\[0\.04\] { opacity: 0.08 !important; }
 }
 .home-search__btn:hover,
 .home-search__iconBtn:hover { border-color: var(--satl-border-hover); }
+
+/* View all button (theme-aware) */
+.satl-viewall-btn{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--satl-border);
+  background: var(--satl-surface);
+  color: var(--satl-text);
+  box-shadow: 0 0 0 1px var(--satl-inset) inset;
+  text-decoration: none;
+  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease, color 150ms ease;
+  user-select: none;
+}
+
+.satl-viewall-btn:hover{
+  border-color: var(--satl-border-hover);
+  transform: translateY(-1px);
+}
+
+.satl-viewall-btn:active{
+  transform: translateY(0px);
+}
+
+/* 키보드 포커스 (접근성) */
+.satl-viewall-btn:focus-visible{
+  outline: 2px solid color-mix(in srgb, #22d3ee 55%, transparent);
+  outline-offset: 2px;
+}
+
+/* 살짝 강조(라이트에서 더 선명하게 보이도록) */
+html.light .satl-viewall-btn{
+  background: var(--satl-surface-strong);
+}

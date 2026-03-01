@@ -97,8 +97,8 @@ import Layout from "../layouts/Layout.astro";
 
     // ── Data ──
     let docs = []; // SearchDoc[]
-    let inv = Object.create(null); // token -> number[]
-    let prepared = null; // docId -> { type, ts, titleN, tagsN, descN, textN? }
+    let inv = Object.create(null); // token/prefix -> number[]
+    let prepared = null; // docId -> cached normalized fields
 
     async function load() {
       const res = await fetch("/search-index.json", { cache: "no-cache" });
@@ -126,7 +126,11 @@ import Layout from "../layouts/Layout.astro";
         "docs: " + docs.length;
     }
 
-    // 후보 docId 모으기 (union)
+    /**
+     * ✅ 후보 docId 모으기 (정석)
+     * - search-index.json.ts에서 prefix 키를 미리 만들어주므로
+     *   inv[t]만 조회하면 된다. (느린 for..in startsWith 제거)
+     */
     function getCandidateIds(tokens) {
       const cand = new Set();
 
@@ -134,27 +138,11 @@ import Layout from "../layouts/Layout.astro";
         const t = tokens[i];
         if (!t || t.length < 2) continue;
 
-        const exact = inv[t];
-        if (exact && exact.length) {
-          for (let j = 0; j < exact.length; j++) cand.add(exact[j]);
-          continue;
-        }
-
-        // prefix fallback
-        const limit = t.length < 4 ? 40 : Infinity; // 2~3글자는 최대 40개 키만 허용
-        let matchedKeys = 0;
-
-        for (const key in inv) {
-          if (!key.startsWith(t)) continue;
-
-          const posting = inv[key];
+        const posting = inv[t];
+        if (posting && posting.length) {
           for (let j = 0; j < posting.length; j++) cand.add(posting[j]);
-
-          matchedKeys++;
-          if (matchedKeys >= limit) break;
         }
       }
-
       return cand;
     }
 
@@ -227,7 +215,9 @@ import Layout from "../layouts/Layout.astro";
               escapeHtml(fmtDate(d.date)) +
             "</div>" +
             (descHtml
-              ? '<div class="relative mt-2 text-sm" style="color: var(--satl-text-dim)">' + descHtml + "</div>"
+              ? '<div class="relative mt-2 text-sm" style="color: var(--satl-text-dim)">' +
+                descHtml +
+                "</div>"
               : "") +
             (tagsHtml ? '<div class="relative">' + tagsHtml + "</div>" : "") +
           "</a>"
