@@ -1,3 +1,24 @@
+function parseCookies(header) {
+  const out = Object.create(null);
+  if (!header) return out;
+
+  const parts = header.split(";");
+  for (const p of parts) {
+    const i = p.indexOf("=");
+    if (i === -1) continue;
+    const k = p.slice(0, i).trim();
+    const v = p.slice(i + 1).trim();
+    out[k] = decodeURIComponent(v);
+  }
+  return out;
+}
+
+function makeStateHex() {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 export async function onRequest(context) {
   const { request, env } = context;
 
@@ -6,7 +27,7 @@ export async function onRequest(context) {
 
   const url = new URL(request.url);
 
-  // Allowlist: ALLOWED_ORIGINS가 있으면 그걸 사용, 없으면 SITE_ORIGIN만 허용
+  // allowlist: ALLOWED_ORIGINS가 있으면 우선, 없으면 SITE_ORIGIN
   const allowed = String(env.ALLOWED_ORIGINS || "")
     .split(",")
     .map((s) => s.trim())
@@ -19,16 +40,15 @@ export async function onRequest(context) {
     return new Response("Forbidden origin", { status: 403 });
   }
 
-  // redirect_uri는 가능한 한 고정
   const redirectBase = siteOrigin || url.origin;
   const redirectUri = `${redirectBase}/api/callback`;
 
-  // CSRF state 생성 + 쿠키 저장
-  const stateBytes = new Uint8Array(16);
-  crypto.getRandomValues(stateBytes);
-  const state = Array.from(stateBytes, (b) => b.toString(16).padStart(2, "0")).join("");
+  // ✅ 핵심: state 쿠키가 이미 있으면 "재사용" (Decap이 /api/auth를 여러 번 불러도 안전)
+  const cookies = parseCookies(request.headers.get("Cookie"));
+  const existing = cookies.satl_oauth_state;
+  const state = existing || makeStateHex();
 
-  // scope: public repo면 public_repo 권장, private이면 repo
+  // public repo면 public_repo 권장, private면 repo
   const scope = env.GITHUB_SCOPE || "public_repo user";
 
   const authorizeUrl = new URL("https://github.com/login/oauth/authorize");
@@ -37,17 +57,18 @@ export async function onRequest(context) {
   authorizeUrl.searchParams.set("scope", scope);
   authorizeUrl.searchParams.set("state", state);
 
-  const isHttps = redirectBase.startsWith("https://");
-  const cookie =
-    `satl_oauth_state=${state}; Path=/; Max-Age=600; HttpOnly; SameSite=Lax` +
-    (isHttps ? "; Secure" : "");
+  // 쿠키는 "처음 생성했을 때만" 세팅 (재사용이면 Set-Cookie 불필요)
+  const headers = new Headers();
+  headers.set("Location", authorizeUrl.toString());
+  headers.set("Cache-Control", "no-store");
 
-  return new Response(null, {
-    status: 302,
-    headers: {
-      Location: authorizeUrl.toString(),
-      "Set-Cookie": cookie,
-      "Cache-Control": "no-store",
-    },
-  });
+  if (!existing) {
+    const isHttps = redirectBase.startsWith("https://");
+    const cookie =
+      `satl_oauth_state=${state}; Path=/; Max-Age=600; HttpOnly; SameSite=Lax` +
+      (isHttps ? "; Secure" : "");
+    headers.set("Set-Cookie", cookie);
+  }
+
+  return new Response(null, { status: 302, headers });
 }
