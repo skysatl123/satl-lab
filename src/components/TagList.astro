@@ -1,0 +1,18 @@
+---
+type Props = {
+  tags: string[];
+  class?: string;
+};
+
+const { tags, class: className = "" } = Astro.props as Props;
+---
+
+{tags.length > 0 && (
+  <div class={`flex flex-wrap gap-2 ${className}`}>
+    {tags.map((tag) => (
+      <span class="satl-chip" style="padding: 2px 8px; font-size: 11px;">
+        {tag}
+      </span>
+    ))}
+  </div>
+)}

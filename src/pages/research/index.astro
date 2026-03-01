@@ -1,11 +1,11 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
-import { fmtKSTDate } from '../../lib/date';
+import Layout from "../../layouts/Layout.astro";
+import ContentCard from "../../components/ContentCard.astro";
+import { getCollection } from "astro:content";
 
-const posts = (await getCollection('research')).sort(
-  (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
-);
+const posts = (
+  await getCollection("research", ({ data }) => data.status === "published")
+).sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
 
 const sections = [
   { title: "Overview", desc: "연구 주제 / 키워드 / 내 역할" },
@@ -19,13 +19,15 @@ const sections = [
 <Layout title="Research | SATL Lab">
   <main class="mx-auto max-w-3xl px-4 py-12">
     <h1 class="text-3xl font-bold">Research</h1>
-    <p class="mt-2 text-neutral-400">학부연구생 트랙 — 논문, 실험, 주간 업데이트.</p>
+    <p class="mt-2" style="color: var(--satl-text-dim);">
+      학부연구생 트랙 — 논문, 실험, 주간 업데이트.
+    </p>
 
     <div class="mt-6 grid gap-3">
       {sections.map((s) => (
-        <div class="rounded border border-neutral-800 bg-neutral-900 px-5 py-3">
-          <h3 class="font-semibold text-white">{s.title}</h3>
-          <p class="mt-1 text-sm text-neutral-400">{s.desc}</p>
+        <div class="satl-card px-5 py-3">
+          <h3 class="font-semibold" style="color: var(--satl-text);">{s.title}</h3>
+          <p class="mt-1 text-sm" style="color: var(--satl-text-dim);">{s.desc}</p>
         </div>
       ))}
     </div>
@@ -33,11 +35,16 @@ const sections = [
     {posts.length > 0 && (
       <div class="mt-10 space-y-4">
         <h2 class="text-xl font-semibold">Posts</h2>
+
         {posts.map((post) => (
-          <a href={`/research/${post.id}`} class="block rounded border border-neutral-800 bg-neutral-900 px-5 py-4 no-underline transition hover:border-neutral-600">
-            <h3 class="text-lg font-semibold text-white">{post.data.title}</h3>
-            <p class="mt-1 text-sm text-neutral-500">{fmtKSTDate(post.data.date)}</p>
-          </a>
+          <ContentCard
+            href={`/research/${post.id}`}
+            title={post.data.title}
+            date={post.data.publishedAt}
+            summary={post.data.summary}
+            tags={post.data.tags}
+            badgeRight={post.data.type}
+          />
         ))}
       </div>
     )}

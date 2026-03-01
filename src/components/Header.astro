@@ -1,5 +1,5 @@
 ---
-import ThemeToggle from './ThemeToggle.astro';
+import ThemeToggle from "./ThemeToggle.astro";
 
 const nav = [
   { label: "Home", href: "/" },
@@ -19,22 +19,24 @@ function isActive(href: string) {
 
 function desktopClass(href: string) {
   return isActive(href)
-    ? "text-sm no-underline transition text-white font-medium border-b border-white pb-0.5"
-    : "text-sm no-underline transition text-neutral-400 hover:text-white";
+    ? "satl-navlink satl-navlink--active"
+    : "satl-navlink";
 }
 
 function mobileClass(href: string) {
-  return isActive(href)
-    ? "whitespace-nowrap rounded-full border border-white bg-white text-neutral-950 font-medium px-3 py-1 text-xs no-underline transition"
-    : "whitespace-nowrap rounded-full border border-neutral-700 bg-neutral-900 text-neutral-300 px-3 py-1 text-xs no-underline transition hover:bg-neutral-800";
+  return isActive(href) ? "satl-chip satl-chip--active" : "satl-chip";
 }
 ---
 
-<header class="sticky top-0 z-50 border-b border-neutral-800 bg-neutral-950/80 backdrop-blur">
+<header class="sticky top-0 z-50 satl-surface satl-surface--bottom backdrop-blur satl-header">
   <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
     <a href="/" class="flex items-center gap-2 no-underline">
-      <span class="text-lg font-bold tracking-tight text-white">SATL Lab</span>
-      <span class="hidden text-xs text-neutral-500 sm:inline">circuits · signals · silicon</span>
+      <span class="text-lg font-bold tracking-tight" style="color: var(--satl-text);">
+        SATL Lab
+      </span>
+      <span class="hidden text-xs sm:inline" style="color: var(--satl-text-dim);">
+        circuits · signals · silicon
+      </span>
     </a>
 
     <div class="hidden items-center gap-5 md:flex">

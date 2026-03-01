@@ -1,0 +1,76 @@
+---
+import { fmtKSTDate } from "../lib/date";
+import TagList from "./TagList.astro";
+
+type Props = {
+  href: string;
+  title: string;
+  date?: Date;
+  summary?: string;
+  tags?: string[];
+
+  badgeLeft?: string;
+  badgeRight?: string;
+  badgeRightClass?: string;
+  borderClass?: string; // 상태별 강조 테두리만 여기로
+};
+
+const {
+  href,
+  title,
+  date,
+  summary,
+  tags = [],
+  badgeLeft,
+  badgeRight,
+  badgeRightClass = "",
+  borderClass = "", // ✅ 기본은 빈 값
+} = Astro.props as Props;
+
+const cardClass = `satl-card group relative block overflow-hidden px-5 py-4 no-underline transition${
+  borderClass ? ` ${borderClass}` : ""
+}`;
+---
+
+<a href={href} class={cardClass}>
+  <div
+    class="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-[0.03]"
+    style="background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px); background-size: 16px 16px;"
+  />
+
+  {(badgeLeft || badgeRight) && (
+    <div class="relative flex items-center gap-3">
+      {badgeLeft && (
+        <span class="satl-chip" style="padding: 2px 8px; font-size: 11px;">
+          {badgeLeft}
+        </span>
+      )}
+      {badgeRight && (
+        <span
+          class={`text-xs font-mono ${badgeRightClass}`}
+          style="color: var(--satl-text-dim);"
+        >
+          {badgeRight}
+        </span>
+      )}
+    </div>
+  )}
+
+  <h3 class="relative mt-2 text-lg font-semibold" style="color: var(--satl-text);">
+    {title}
+  </h3>
+
+  {date && (
+    <p class="relative mt-1 text-sm font-mono" style="color: var(--satl-text-dim);">
+      {fmtKSTDate(date)}
+    </p>
+  )}
+
+  {summary && (
+    <p class="relative mt-2 text-sm" style="color: var(--satl-text-dim);">
+      {summary}
+    </p>
+  )}
+
+  <TagList tags={tags} class="relative mt-3" />
+</a>

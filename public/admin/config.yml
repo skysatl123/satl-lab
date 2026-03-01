@@ -21,10 +21,13 @@ collections:
     fields:
       - { label: "Title", name: "title", widget: "string" }
 
-      # ✅ frontmatter에 무조건 문자열로 저장되게 (draft/published)
-      - { label: "Visibility (draft/published)", name: "status", widget: "string", default: "draft" }
+      # ✅ Visibility를 안전하게 제한 (draft/published)
+      - label: "Visibility"
+        name: "status"
+        widget: "select"
+        options: ["draft", "published"]
+        default: "draft"
 
-      # ✅ default 제거: 빈 문자열("") 저장을 줄임
       - { label: "Published At (optional)", name: "publishedAt", widget: "datetime", format: "YYYY-MM-DD", required: false }
       - { label: "Updated At (optional)", name: "updatedAt", widget: "datetime", format: "YYYY-MM-DD", required: false }
 
@@ -67,8 +70,12 @@ collections:
     fields:
       - { label: "Title", name: "title", widget: "string" }
 
-      # ✅ frontmatter에 무조건 문자열로 저장되게
-      - { label: "Visibility (draft/published)", name: "status", widget: "string", default: "draft" }
+      # ✅ Visibility를 안전하게 제한 (draft/published)
+      - label: "Visibility"
+        name: "status"
+        widget: "select"
+        options: ["draft", "published"]
+        default: "draft"
 
       - { label: "Published At (optional)", name: "publishedAt", widget: "datetime", format: "YYYY-MM-DD", required: false }
       - { label: "Updated At (optional)", name: "updatedAt", widget: "datetime", format: "YYYY-MM-DD", required: false }
@@ -79,7 +86,6 @@ collections:
         options: ["Signals & Systems", "Electronic Circuits", "Circuits Lab", "EM / RF", "Semiconductor Devices"]
         required: false
 
-      # ✅ 진행 상태는 projectStatus
       - label: "Project Status"
         name: "projectStatus"
         widget: "select"
@@ -107,8 +113,12 @@ collections:
     fields:
       - { label: "Title", name: "title", widget: "string" }
 
-      # ✅ frontmatter에 무조건 문자열로 저장되게
-      - { label: "Visibility (draft/published)", name: "status", widget: "string", default: "draft" }
+      # ✅ Visibility를 안전하게 제한 (draft/published)
+      - label: "Visibility"
+        name: "status"
+        widget: "select"
+        options: ["draft", "published"]
+        default: "draft"
 
       - { label: "Published At (optional)", name: "publishedAt", widget: "datetime", format: "YYYY-MM-DD", required: false }
       - { label: "Updated At (optional)", name: "updatedAt", widget: "datetime", format: "YYYY-MM-DD", required: false }
@@ -147,8 +157,12 @@ collections:
     fields:
       - { label: "Title", name: "title", widget: "string" }
 
-      # ✅ frontmatter에 무조건 문자열로 저장되게
-      - { label: "Visibility (draft/published)", name: "status", widget: "string", default: "draft" }
+      # ✅ Visibility를 안전하게 제한 (draft/published)
+      - label: "Visibility"
+        name: "status"
+        widget: "select"
+        options: ["draft", "published"]
+        default: "draft"
 
       - { label: "Published At (optional)", name: "publishedAt", widget: "datetime", format: "YYYY-MM-DD", required: false }
       - { label: "Updated At (optional)", name: "updatedAt", widget: "datetime", format: "YYYY-MM-DD", required: false }

@@ -5,18 +5,23 @@ import Layout from "../layouts/Layout.astro";
 <Layout title="Search | SATL Lab">
   <main id="search-page" class="mx-auto max-w-3xl px-4 py-12">
     <h1 class="text-3xl font-bold">Search</h1>
-    <p class="mt-2 text-neutral-400">블로그/노트/프로젝트/리서치 전체를 검색합니다.</p>
+
+    <p class="mt-2" style="color: var(--satl-text-dim);">
+      블로그/노트/프로젝트/리서치 전체를 검색합니다.
+    </p>
 
     <div class="mt-6 flex gap-2">
       <input
-      id="q"
-      class="w-full rounded border border-neutral-800 bg-neutral-900 px-4 py-2 text-neutral-200 outline-none focus:border-cyan-800 font-mono placeholder:text-neutral-500"
-      placeholder="Search…"
-      autocomplete="off"
-    />
+        id="q"
+        class="satl-surface w-full rounded px-4 py-2 outline-none font-mono"
+        style="color: var(--satl-text);"
+        placeholder="Search…"
+        autocomplete="off"
+      />
       <select
         id="type"
-        class="rounded border border-neutral-800 bg-neutral-900 px-3 py-2 text-neutral-200 outline-none focus:border-cyan-800 font-mono"
+        class="satl-surface rounded px-3 py-2 outline-none font-mono"
+        style="color: var(--satl-text);"
       >
         <option value="all">all</option>
         <option value="blog">blog</option>
@@ -26,7 +31,7 @@ import Layout from "../layouts/Layout.astro";
       </select>
     </div>
 
-    <div id="meta" class="mt-3 text-xs text-neutral-500 font-mono"></div>
+    <div id="meta" class="mt-3 text-xs font-mono" style="color: var(--satl-text-dim);"></div>
 
     <div id="results" class="mt-6 space-y-3"></div>
   </main>
@@ -78,8 +83,6 @@ import Layout from "../layouts/Layout.astro";
       for (let i = 0; i < tokens.length; i++) {
         const raw = tokens[i];
         if (!raw) continue;
-
-        // 너무 짧은 토큰(1글자)은 도배될 수 있어서 스킵(원하면 1로 바꿔도 됨)
         if (raw.length < 2) continue;
 
         const escaped = raw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -93,44 +96,78 @@ import Layout from "../layouts/Layout.astro";
     }
 
     // ── Data ──
-    let indexed = []; // [{ doc, type, ts, title, tags, desc, text }]
+    let docs = []; // SearchDoc[]
+    let inv = Object.create(null); // token -> number[]
+    let prepared = null; // docId -> { type, ts, titleN, tagsN, descN, textN? }
 
     async function load() {
       const res = await fetch("/search-index.json", { cache: "no-cache" });
       const data = await res.json();
-      const docs = data.docs || [];
 
-      indexed = docs.map((d) => {
-        const ts = Date.parse(d.date) || 0;
-        return {
-          doc: d, // ✅ direct reference (prevents mismatch after sorting)
+      docs = data.docs || [];
+      inv = data.index || Object.create(null);
+
+      prepared = new Array(docs.length);
+      for (let i = 0; i < docs.length; i++) {
+        const d = docs[i];
+        prepared[i] = {
           type: d.type,
-          ts,
-          title: normalize(d.title),
-          tags: normalize((d.tags || []).join(" ")),
-          desc: normalize(d.description || ""),
-          text: normalize(d.text || ""),
+          ts: Date.parse(d.date) || 0,
+          titleN: normalize(d.title),
+          tagsN: normalize((d.tags || []).join(" ")),
+          descN: normalize(d.description || ""),
+          // d.text는 서버에서 이미 normalize된 값
+          textN: d.text || "",
         };
-      });
-
-      // sort once by recency
-      indexed.sort((a, b) => b.ts - a.ts);
+      }
 
       $meta.textContent =
         (data.generatedAt ? "index: " + data.generatedAt + " · " : "") +
-        "docs: " + indexed.length;
+        "docs: " + docs.length;
+    }
+
+    // 후보 docId 모으기 (union)
+    function getCandidateIds(tokens) {
+      const cand = new Set();
+
+      for (let i = 0; i < tokens.length; i++) {
+        const t = tokens[i];
+        if (!t || t.length < 2) continue;
+
+        const exact = inv[t];
+        if (exact && exact.length) {
+          for (let j = 0; j < exact.length; j++) cand.add(exact[j]);
+          continue;
+        }
+
+        // prefix fallback
+        const limit = t.length < 4 ? 40 : Infinity; // 2~3글자는 최대 40개 키만 허용
+        let matchedKeys = 0;
+
+        for (const key in inv) {
+          if (!key.startsWith(t)) continue;
+
+          const posting = inv[key];
+          for (let j = 0; j < posting.length; j++) cand.add(posting[j]);
+
+          matchedKeys++;
+          if (matchedKeys >= limit) break;
+        }
+      }
+
+      return cand;
     }
 
     // ── Scoring ──
-    function score(idx, tokens) {
+    function scorePrepared(p, tokens) {
       let s = 0;
       for (let j = 0; j < tokens.length; j++) {
         const t = tokens[j];
-        if (!t) continue;
-        if (idx.title.indexOf(t) !== -1) s += 8;
-        if (idx.tags.indexOf(t) !== -1) s += 5;
-        if (idx.desc.indexOf(t) !== -1) s += 3;
-        if (idx.text.indexOf(t) !== -1) s += 1;
+        if (!t || t.length < 2) continue;
+        if (p.titleN.indexOf(t) !== -1) s += 8;
+        if (p.tagsN.indexOf(t) !== -1) s += 5;
+        if (p.descN.indexOf(t) !== -1) s += 3;
+        if (p.textN.indexOf(t) !== -1) s += 1;
       }
       return s;
     }
@@ -139,7 +176,7 @@ import Layout from "../layouts/Layout.astro";
     function renderDocs(list, tokens) {
       if (!list.length) {
         $results.innerHTML =
-          '<div class="rounded border border-neutral-800 bg-neutral-900 p-6 text-neutral-500">검색 결과가 없습니다.</div>';
+          '<div class="satl-card p-6" style="color: var(--satl-text-dim)">검색 결과가 없습니다.</div>';
         return;
       }
 
@@ -155,7 +192,7 @@ import Layout from "../layouts/Layout.astro";
           : "";
 
         const badge =
-          '<span class="rounded border border-neutral-700 px-2 py-0.5 text-xs text-neutral-400">' +
+          '<span class="satl-chip" style="padding: 2px 8px; font-size: 11px;">' +
           escapeHtml(d.type) +
           "</span>";
 
@@ -165,35 +202,35 @@ import Layout from "../layouts/Layout.astro";
           const parts = [];
           for (let m = 0; m < t.length; m++) {
             parts.push(
-              '<span class="rounded-full border border-neutral-700 px-2 py-0.5 text-xs text-neutral-400">' +
+              '<span class="satl-chip" style="padding: 2px 8px; font-size: 11px;">' +
                 escapeHtml(t[m]) +
                 "</span>"
             );
           }
           tagsHtml =
-            '<div class="mt-2 flex flex-wrap gap-2">' +
-            parts.join(" ") +
-            "</div>";
+            '<div class="mt-2 flex flex-wrap gap-2">' + parts.join(" ") + "</div>";
         }
 
         html.push(
           '<a href="' +
             escapeHtml(d.url) +
-            '" class="block rounded border border-neutral-800 bg-neutral-900 px-5 py-4 no-underline hover:border-neutral-600">' +
-            '<div class="flex items-center justify-between gap-3">' +
-            '<div class="text-white font-semibold">' +
-            titleHtml +
+            '" class="satl-card group relative block overflow-hidden px-5 py-4 no-underline transition">' +
+            '<div class="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-[0.03]" ' +
+              'style="background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px); background-size: 16px 16px;"></div>' +
+            '<div class="relative flex items-center justify-between gap-3">' +
+              '<div class="font-semibold" style="color: var(--satl-text)">' +
+                titleHtml +
+              "</div>" +
+              badge +
             "</div>" +
-            badge +
-            "</div>" +
-            '<div class="mt-1 text-sm text-neutral-500 font-mono">' +
-            escapeHtml(fmtDate(d.date)) +
+            '<div class="relative mt-1 text-sm font-mono" style="color: var(--satl-text-dim)">' +
+              escapeHtml(fmtDate(d.date)) +
             "</div>" +
             (descHtml
-              ? '<div class="mt-2 text-sm text-neutral-400">' + descHtml + "</div>"
+              ? '<div class="relative mt-2 text-sm" style="color: var(--satl-text-dim)">' + descHtml + "</div>"
               : "") +
-            tagsHtml +
-            "</a>"
+            (tagsHtml ? '<div class="relative">' + tagsHtml + "</div>" : "") +
+          "</a>"
         );
       }
 
@@ -207,7 +244,7 @@ import Layout from "../layouts/Layout.astro";
       const q = normalize($q.value);
       const type = $type.value;
 
-      if (!indexed.length) {
+      if (!docs.length || !prepared) {
         renderDocs([], []);
         return;
       }
@@ -215,10 +252,10 @@ import Layout from "../layouts/Layout.astro";
       // empty query: show recent (type-filtered), max 20
       if (!q) {
         const out = [];
-        for (let i = 0; i < indexed.length && out.length < 20; i++) {
-          const idx = indexed[i];
-          if (type !== "all" && idx.type !== type) continue;
-          out.push(idx.doc);
+        for (let i = 0; i < docs.length && out.length < 20; i++) {
+          const d = docs[i];
+          if (type !== "all" && d.type !== type) continue;
+          out.push(d);
         }
         renderDocs(out, []);
         return;
@@ -226,14 +263,17 @@ import Layout from "../layouts/Layout.astro";
 
       const tokens = q.split(" ").filter(Boolean);
 
+      const cand = getCandidateIds(tokens);
       const results = [];
-      for (let i = 0; i < indexed.length; i++) {
-        const idx = indexed[i];
-        if (type !== "all" && idx.type !== type) continue;
 
-        const s = score(idx, tokens);
-        if (s > 0) results.push({ s, ts: idx.ts, doc: idx.doc });
-      }
+      cand.forEach((docId) => {
+        const p = prepared[docId];
+        if (!p) return;
+        if (type !== "all" && p.type !== type) return;
+
+        const s = scorePrepared(p, tokens);
+        if (s > 0) results.push({ s, ts: p.ts, doc: docs[docId] });
+      });
 
       results.sort((a, b) => b.s - a.s || b.ts - a.ts);
 
@@ -249,7 +289,6 @@ import Layout from "../layouts/Layout.astro";
       timer = setTimeout(run, 150);
     }
 
-    // ── Init ──
     (async function () {
       try {
         await load();

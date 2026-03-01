@@ -1,7 +1,7 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import { fmtKSTDate } from '../lib/date';
-import { getRecentBlog, getRecentNotes, getFeaturedProjects } from '../lib/content';
+import Layout from "../layouts/Layout.astro";
+import ContentCard from "../components/ContentCard.astro";
+import { getRecentBlog, getRecentNotes, getFeaturedProjects } from "../lib/content";
 
 // ✅ 캐시된 정렬 결과 재사용 (정렬/필터 1회화)
 const recentBlog = await getRecentBlog(3);
@@ -19,17 +19,18 @@ const categories = [
 
 <Layout title="SATL Lab">
   <div class="mx-auto max-w-4xl px-4">
-
     <!-- Hero Section -->
     <section class="relative overflow-hidden py-20 text-center">
       <!-- Grid background -->
-      <div class="pointer-events-none absolute inset-0 opacity-[0.04]"
-        style="background-image: linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px); background-size: 24px 24px;">
-      </div>
+      <div
+        class="pointer-events-none absolute inset-0 opacity-[0.04]"
+        style="background-image: linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px); background-size: 24px 24px;"
+      />
       <!-- Glow -->
-      <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full opacity-20"
-        style="background: radial-gradient(circle, #22d3ee, transparent 70%);">
-      </div>
+      <div
+        class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full opacity-20"
+        style="background: radial-gradient(circle, #22d3ee, transparent 70%);"
+      />
 
       <p class="relative text-sm font-mono tracking-widest text-cyan-400 uppercase">
         &gt; From theory to bench.
@@ -37,47 +38,59 @@ const categories = [
       <h1 class="relative mt-4 text-5xl font-bold tracking-tight md:text-6xl">
         SATL Lab
       </h1>
-      <p id="typed-text" class="relative mt-4 h-7 font-mono text-neutral-400">
-      </p>
+
+      <p
+        id="typed-text"
+        class="relative mt-4 h-7 font-mono"
+        style="color: var(--satl-text-dim);"
+      ></p>
 
       <div class="relative mt-8 flex flex-wrap justify-center gap-2">
         {categories.map((cat) => (
-          <span class="rounded-full border border-neutral-700 bg-neutral-900/50 px-3 py-1 text-xs text-neutral-300 font-mono">
-            {cat}
-          </span>
+          <span class="satl-chip">{cat}</span>
         ))}
       </div>
 
       <!-- Status bar -->
-      <div class="relative mt-10 mx-auto flex max-w-md items-center justify-center gap-6 rounded border border-neutral-800 bg-neutral-900/50 px-6 py-3 font-mono text-xs text-neutral-500">
-        <span><span class="text-green-400 mr-1">●</span> status: online</span>
-        <span>|</span>
-        <span>mode: study + build</span>
-        <span>|</span>
-        <span>sem: 3-1</span>
+      <div class="relative mt-10 mx-auto w-full max-w-md">
+        <div class="status-pill">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span class="status-label">status:</span>
+          <span class="status-value">online</span>
+
+          <span class="status-sep" aria-hidden="true"></span>
+
+          <span class="status-label">mode:</span>
+          <span class="status-value">study + build</span>
+
+          <span class="status-sep" aria-hidden="true"></span>
+
+          <span class="status-label">sem:</span>
+          <span class="status-value">3-1</span>
+        </div>
       </div>
     </section>
 
     <!-- Home Search -->
-    <form
-      id="home-search"
-      class="relative mt-4 mx-auto flex max-w-xl flex-wrap items-center gap-2"
-      action="/search"
-      method="get"
-    >
-      <input
-        id="home-q"
-        name="q"
-        class="flex-1 min-w-[260px] rounded border border-neutral-800 bg-neutral-900/50 px-4 py-2 text-neutral-200 outline-none focus:border-cyan-800 font-mono"
-        placeholder="Search…"
-        autocomplete="off"
-      />
+    <form id="home-search" class="home-search" action="/search" method="get">
+      <div class="home-search__input">
+        <span class="home-search__icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </span>
+        <input
+          id="home-q"
+          name="q"
+          class="home-search__field"
+          placeholder="Search..."
+          autocomplete="off"
+        />
+      </div>
 
-      <select
-        id="home-type"
-        name="type"
-        class="w-32 rounded border border-neutral-800 bg-neutral-900/50 px-3 py-2 text-neutral-200 outline-none focus:border-cyan-800 font-mono"
-      >
+      <select id="home-type" name="type" class="home-search__select">
         <option value="all">all</option>
         <option value="blog">blog</option>
         <option value="notes">notes</option>
@@ -85,52 +98,50 @@ const categories = [
         <option value="research">research</option>
       </select>
 
-      <!-- 1) 돋보기: 홈에서 즉시 검색 -->
-      <button
-        type="button"
-        id="home-search-btn"
-        aria-label="Search"
-        title="Search"
-        class="w-11 rounded border border-neutral-800 bg-neutral-900/50 px-3 py-2 text-neutral-200 hover:border-neutral-600"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
+      <button type="button" id="home-search-btn" class="home-search__btn" aria-label="Search" title="Search">
+        <span class="home-search__btnIcon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </span>
+        <span>Search</span>
       </button>
 
-      <!-- 2) … : /search로 이동 -->
-      <button
-        type="button"
-        id="home-advanced-btn"
-        aria-label="Open full search"
-        title="Open full search"
-        class="w-11 rounded border border-neutral-800 bg-neutral-900/50 px-3 py-2 text-neutral-200 hover:border-neutral-600 font-mono"
-      >
-        …
+      <button type="button" id="home-advanced-btn" class="home-search__iconBtn" aria-label="Open full search" title="Open full search">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="4" y1="21" x2="4" y2="14"></line>
+          <line x1="4" y1="10" x2="4" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12" y2="3"></line>
+          <line x1="20" y1="21" x2="20" y2="16"></line>
+          <line x1="20" y1="12" x2="20" y2="3"></line>
+          <line x1="1" y1="14" x2="7" y2="14"></line>
+          <line x1="9" y1="8" x2="15" y2="8"></line>
+          <line x1="17" y1="16" x2="23" y2="16"></line>
+        </svg>
       </button>
     </form>
 
-<!-- 홈 즉시검색 결과 표시 영역 -->
-<div id="home-search-results" class="mx-auto mt-3 max-w-xl"></div>
+    <div id="home-search-results" class="mx-auto mt-3 max-w-xl"></div>
 
     <!-- Featured Projects -->
     {featuredProjects.length > 0 && (
       <section class="mt-16">
         <h2 class="text-2xl font-bold">Featured Projects</h2>
+
         <div class="mt-4 grid gap-4 md:grid-cols-3">
           {featuredProjects.map((post) => (
-            <a href={`/projects/${post.id}`} class="group relative overflow-hidden rounded border border-neutral-800 bg-neutral-900 p-5 no-underline transition hover:border-cyan-800">
-              <div class="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-[0.03]"
-                style="background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px); background-size: 16px 16px;">
-              </div>
-              <span class="text-xs text-neutral-500 font-mono">{post.data.category}</span>
-              <h3 class="mt-1 font-semibold text-white">{post.data.title}</h3>
-              {post.data.description && (
-                <p class="mt-2 text-sm text-neutral-400">{post.data.description}</p>
-              )}
-            </a>
+            <ContentCard
+              href={`/projects/${post.id}`}
+              title={post.data.title}
+              date={post.data.publishedAt}
+              summary={post.data.summary}
+              tags={post.data.tags}
+              badgeLeft={post.data.category}
+            />
           ))}
         </div>
       </section>
@@ -140,20 +151,26 @@ const categories = [
     <section class="mt-16">
       <div class="flex items-center justify-between">
         <h2 class="text-2xl font-bold">Recent Blog</h2>
-        <a href="/blog" class="text-sm text-neutral-400 no-underline hover:text-white font-mono">View all →</a>
+
+        <a href="/blog" class="satl-link text-sm font-mono"></a>
+          View all →
+        </a>
       </div>
+
       {recentBlog.length === 0 ? (
-        <p class="mt-4 text-neutral-500 font-mono text-sm">// no posts yet</p>
+        <p class="mt-4 font-mono text-sm" style="color: var(--satl-text-dim);">
+          // no posts yet
+        </p>
       ) : (
         <div class="mt-4 space-y-3">
           {recentBlog.map((post) => (
-            <a href={`/blog/${post.id}`} class="group relative block overflow-hidden rounded border border-neutral-800 bg-neutral-900 px-5 py-4 no-underline transition hover:border-neutral-600">
-              <div class="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-[0.03]"
-                style="background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px); background-size: 16px 16px;">
-              </div>
-              <h3 class="relative font-semibold text-white">{post.data.title}</h3>
-              <p class="relative mt-1 text-sm text-neutral-500 font-mono">{fmtKSTDate(post.data.date)}</p>
-            </a>
+            <ContentCard
+              href={`/blog/${post.id}`}
+              title={post.data.title}
+              date={post.data.publishedAt}
+              summary={post.data.summary}
+              tags={post.data.tags}
+            />
           ))}
         </div>
       )}
@@ -163,214 +180,259 @@ const categories = [
     <section class="mt-16 pb-16">
       <div class="flex items-center justify-between">
         <h2 class="text-2xl font-bold">Recent Lab Notes</h2>
-        <a href="/notes" class="text-sm text-neutral-400 no-underline hover:text-white font-mono">View all →</a>
+
+        <a href="/notes" class="satl-link text-sm font-mono"></a>
+          View all →
+        </a>
       </div>
+
       {recentNotes.length === 0 ? (
-        <p class="mt-4 text-neutral-500 font-mono text-sm">// no notes yet</p>
+        <p class="mt-4 font-mono text-sm" style="color: var(--satl-text-dim);">
+          // no notes yet
+        </p>
       ) : (
         <div class="mt-4 space-y-3">
           {recentNotes.map((post) => (
-            <a href={`/notes/${post.id}`} class="group relative block overflow-hidden rounded border border-neutral-800 bg-neutral-900 px-5 py-4 no-underline transition hover:border-neutral-600">
-              <div class="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-[0.03]"
-                style="background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px); background-size: 16px 16px;">
-              </div>
-              <h3 class="relative font-semibold text-white">{post.data.title}</h3>
-              <p class="relative mt-1 text-sm text-neutral-500 font-mono">{fmtKSTDate(post.data.date)}</p>
-            </a>
+            <ContentCard
+              href={`/notes/${post.id}`}
+              title={post.data.title}
+              date={post.data.publishedAt}
+              summary={post.data.summary}
+              tags={post.data.tags}
+            />
           ))}
         </div>
       )}
     </section>
-
   </div>
 
-<!-- Typing effect script -->
-<script is:inline>
-  document.addEventListener('DOMContentLoaded', function() {
-    var phrases = [
-      'From theory to measurement.',
-      'circuits · signals · silicon.',
-      'Build, measure, explain.',
-      'Reproducible engineering notes.',
-    ];
-    var el = document.getElementById('typed-text');
-    if (!el) return;
-    var phraseIdx = 0;
-    var charIdx = 0;
-    var deleting = false;
+  <!-- Typing effect script -->
+  <script is:inline>
+    document.addEventListener("DOMContentLoaded", function () {
+      var phrases = [
+        "From theory to measurement.",
+        "circuits · signals · silicon.",
+        "Build, measure, explain.",
+        "Reproducible engineering notes.",
+      ];
+      var el = document.getElementById("typed-text");
+      if (!el) return;
+      var phraseIdx = 0;
+      var charIdx = 0;
+      var deleting = false;
 
-    function tick() {
-      var current = phrases[phraseIdx];
-      if (!deleting) {
-        el.textContent = '> ' + current.substring(0, charIdx + 1) + '_';
-        charIdx++;
-        if (charIdx >= current.length) {
-          deleting = true;
-          setTimeout(tick, 2000);
-          return;
+      function tick() {
+        var current = phrases[phraseIdx];
+        if (!deleting) {
+          el.textContent = "> " + current.substring(0, charIdx + 1) + "_";
+          charIdx++;
+          if (charIdx >= current.length) {
+            deleting = true;
+            setTimeout(tick, 2000);
+            return;
+          }
+          setTimeout(tick, 60);
+        } else {
+          el.textContent = "> " + current.substring(0, charIdx) + "_";
+          charIdx--;
+          if (charIdx < 0) {
+            deleting = false;
+            charIdx = 0;
+            phraseIdx = (phraseIdx + 1) % phrases.length;
+            setTimeout(tick, 400);
+            return;
+          }
+          setTimeout(tick, 30);
         }
-        setTimeout(tick, 60);
-      } else {
-        el.textContent = '> ' + current.substring(0, charIdx) + '_';
-        charIdx--;
-        if (charIdx < 0) {
-          deleting = false;
-          charIdx = 0;
-          phraseIdx = (phraseIdx + 1) % phrases.length;
-          setTimeout(tick, 400);
-          return;
-        }
-        setTimeout(tick, 30);
       }
-    }
-    tick();
-  });
-</script>
+      tick();
+    });
+  </script>
 
-<!-- Home instant search script (dark-default + light via html.light CSS) -->
-<script is:inline>
-  (function () {
-    var qEl = document.getElementById("home-q");
-    var typeEl = document.getElementById("home-type");
-    var btnSearch = document.getElementById("home-search-btn");
-    var btnAdv = document.getElementById("home-advanced-btn");
-    var outEl = document.getElementById("home-search-results");
+  <!-- Home instant search script -->
+  <script is:inline>
+    (function () {
+      var qEl = document.getElementById("home-q");
+      var typeEl = document.getElementById("home-type");
+      var btnSearch = document.getElementById("home-search-btn");
+      var btnAdv = document.getElementById("home-advanced-btn");
+      var outEl = document.getElementById("home-search-results");
 
-    if (!qEl || !typeEl || !btnSearch || !btnAdv || !outEl) return;
+      if (!qEl || !typeEl || !btnSearch || !btnAdv || !outEl) return;
 
-    function normalize(s) {
-      return (s || "").toLowerCase().replace(/\s+/g, " ").trim();
-    }
+      function normalize(s) {
+        return (s || "").toLowerCase().replace(/\s+/g, " ").trim();
+      }
 
-    function escapeHtml(s) {
-      return String(s || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
+      function escapeHtml(s) {
+        return String(s || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
 
-    // ── index (preprocess once) ──
-    var indexed = null;
+      var docs = null;
+      var inv = null;
+      var prepared = null;
 
-    async function loadIndex() {
-      if (indexed) return indexed;
+      async function loadIndex() {
+        if (docs && inv && prepared) return;
 
-      var res = await fetch("/search-index.json", { cache: "no-cache" });
-      var data = await res.json();
-      var docs = data.docs || [];
+        var res = await fetch("/search-index.json", { cache: "no-cache" });
+        var data = await res.json();
 
-      indexed = docs.map(function (d) {
-        return {
-          doc: d,
-          type: d.type,
-          title: normalize(d.title),
-          tags: normalize((d.tags || []).join(" ")),
-          desc: normalize(d.description || ""),
-          text: normalize(d.text || ""),
-        };
+        docs = data.docs || [];
+        inv = data.index || Object.create(null);
+
+        prepared = new Array(docs.length);
+        for (var i = 0; i < docs.length; i++) {
+          var d = docs[i];
+          prepared[i] = {
+            type: d.type,
+            titleN: normalize(d.title),
+            tagsN: normalize((d.tags || []).join(" ")),
+            descN: normalize(d.description || ""),
+            textN: d.text || "",
+            date: d.date || "",
+          };
+        }
+      }
+
+      function getCandidateIds(tokens) {
+        var cand = new Set();
+
+        for (var i = 0; i < tokens.length; i++) {
+          var t = tokens[i];
+          if (!t || t.length < 2) continue;
+
+          var exact = inv[t];
+          if (exact && exact.length) {
+            for (var j = 0; j < exact.length; j++) cand.add(exact[j]);
+            continue;
+          }
+
+          var limit = t.length < 4 ? 40 : Infinity;
+          var matchedKeys = 0;
+
+          for (var key in inv) {
+            if (!key.startsWith(t)) continue;
+
+            var posting = inv[key];
+            for (var k = 0; k < posting.length; k++) cand.add(posting[k]);
+
+            matchedKeys++;
+            if (matchedKeys >= limit) break;
+          }
+        }
+
+        return cand;
+      }
+
+      function scorePrepared(p, tokens) {
+        var s = 0;
+        for (var j = 0; j < tokens.length; j++) {
+          var t = tokens[j];
+          if (!t || t.length < 2) continue;
+          if (p.titleN.indexOf(t) !== -1) s += 8;
+          if (p.tagsN.indexOf(t) !== -1) s += 5;
+          if (p.descN.indexOf(t) !== -1) s += 3;
+          if (p.textN.indexOf(t) !== -1) s += 1;
+        }
+        return s;
+      }
+
+      function render(list) {
+        if (!list.length) {
+          outEl.innerHTML = "";
+          return;
+        }
+
+        var cards = [];
+        for (var k = 0; k < list.length; k++) {
+          var d = list[k];
+
+          cards.push(
+            '<a class="satl-card group relative block overflow-hidden px-5 py-4 no-underline transition" ' +
+              'href="' + escapeHtml(d.url) + '">' +
+              '<div class="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-[0.03]" ' +
+                'style="background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px); background-size: 16px 16px;"></div>' +
+              '<div class="relative flex items-center justify-between gap-3">' +
+                '<div class="text-sm font-semibold" style="color: var(--satl-text)">' +
+                  escapeHtml(d.title) +
+                '</div>' +
+                '<span class="satl-chip" style="padding: 2px 8px; font-size: 11px;">' +
+                  escapeHtml(d.type) +
+                "</span>" +
+              "</div>" +
+            "</a>"
+          );
+        }
+
+        outEl.innerHTML =
+          '<div class="satl-surface rounded backdrop-blur p-3">' +
+            '<div class="space-y-2">' + cards.join("") + "</div>" +
+          "</div>";
+      }
+
+      async function runInstantSearch() {
+        var q = normalize(qEl.value);
+        var type = typeEl.value;
+
+        if (!q) {
+          outEl.innerHTML = "";
+          return;
+        }
+
+        await loadIndex();
+
+        var tokens = q.split(" ").filter(Boolean);
+
+        var cand = getCandidateIds(tokens);
+        var results = [];
+
+        cand.forEach(function (docId) {
+          var p = prepared[docId];
+          if (!p) return;
+          if (type !== "all" && p.type !== type) return;
+
+          var s = scorePrepared(p, tokens);
+          if (s > 0) results.push({ s: s, date: p.date, doc: docs[docId] });
+        });
+
+        results.sort(function (a, b) {
+          if (b.s !== a.s) return b.s - a.s;
+          var ad = a.date || "";
+          var bd = b.date || "";
+          return ad < bd ? 1 : ad > bd ? -1 : 0;
+        });
+
+        var out = [];
+        var len = Math.min(results.length, 5);
+        for (var i = 0; i < len; i++) out.push(results[i].doc);
+
+        render(out);
+      }
+
+      qEl.addEventListener("input", function () {
+        if (!qEl.value.trim()) outEl.innerHTML = "";
       });
 
-      return indexed;
-    }
+      btnSearch.addEventListener("click", runInstantSearch);
 
-    // ── scoring ──
-    function score(idx, tokens) {
-      var s = 0;
-      for (var j = 0; j < tokens.length; j++) {
-        var t = tokens[j];
-        if (!t) continue;
-        if (idx.title.indexOf(t) !== -1) s += 8;
-        if (idx.tags.indexOf(t) !== -1) s += 5;
-        if (idx.desc.indexOf(t) !== -1) s += 3;
-        if (idx.text.indexOf(t) !== -1) s += 1;
-      }
-      return s;
-    }
+      qEl.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          runInstantSearch();
+        }
+      });
 
-    // ── render (dark default; light handled in global.css via html.light) ──
-    function render(list) {
-      if (!list.length) {
-        outEl.innerHTML = "";
-        return;
-      }
-
-      var cards = [];
-      for (var k = 0; k < list.length; k++) {
-        var d = list[k];
-
-        cards.push(
-          '<a class="block rounded border border-neutral-800 bg-neutral-900 px-4 py-2 no-underline ' +
-            'hover:border-neutral-600 transition" ' +
-            'href="' + escapeHtml(d.url) + '">' +
-            '<div class="flex items-center justify-between gap-3">' +
-              '<div class="text-sm font-semibold text-white">' +
-                escapeHtml(d.title) +
-              "</div>" +
-              '<span class="text-xs text-neutral-400 border border-neutral-700 rounded px-2 py-0.5">' +
-                escapeHtml(d.type) +
-              "</span>" +
-            "</div>" +
-          "</a>"
-        );
-      }
-
-      outEl.innerHTML =
-        '<div class="rounded border border-neutral-800 bg-neutral-900/50 backdrop-blur p-3">' +
-          '<div class="space-y-2">' + cards.join("") + "</div>" +
-        "</div>";
-    }
-
-    // ── run search ──
-    async function runInstantSearch() {
-      var q = normalize(qEl.value);
-      var type = typeEl.value;
-
-      if (!q) {
-        outEl.innerHTML = "";
-        return;
-      }
-
-      var tokens = q.split(" ").filter(Boolean);
-      var all = await loadIndex();
-      var results = [];
-
-      for (var i = 0; i < all.length; i++) {
-        if (type !== "all" && all[i].type !== type) continue;
-        var s = score(all[i], tokens);
-        if (s > 0) results.push({ s: s, doc: all[i].doc });
-      }
-
-      results.sort(function (a, b) { return b.s - a.s; });
-
-      var out = [];
-      var len = Math.min(results.length, 5);
-      for (var j = 0; j < len; j++) out.push(results[j].doc);
-
-      render(out);
-    }
-    
-    // 입력 지우면 결과도 즉시 사라지게
-    qEl.addEventListener("input", function () {
-      if (!qEl.value.trim()) outEl.innerHTML = "";
-    });
-    
-    // ── events ──
-    btnSearch.addEventListener("click", runInstantSearch);
-
-    qEl.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        runInstantSearch();
-      }
-    });
-
-    btnAdv.addEventListener("click", function () {
-      var q = encodeURIComponent(qEl.value || "");
-      var t = encodeURIComponent(typeEl.value || "all");
-      window.location.href = "/search?q=" + q + "&type=" + t;
-    });
-  })();
-</script>
+      btnAdv.addEventListener("click", function () {
+        var q = encodeURIComponent(qEl.value || "");
+        var t = encodeURIComponent(typeEl.value || "all");
+        window.location.href = "/search?q=" + q + "&type=" + t;
+      });
+    })();
+  </script>
 </Layout>

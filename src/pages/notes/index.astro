@@ -1,7 +1,7 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import { fmtKSTDate } from '../../lib/date';
-import { getNotes } from '../../lib/content';
+import Layout from "../../layouts/Layout.astro";
+import ContentCard from "../../components/ContentCard.astro";
+import { getNotes } from "../../lib/content";
 
 const posts = await getNotes();
 ---
@@ -9,19 +9,27 @@ const posts = await getNotes();
 <Layout title="Lab Notes | SATL Lab">
   <main class="mx-auto max-w-3xl px-4 py-12">
     <h1 class="text-3xl font-bold">Lab Notes</h1>
-    <p class="mt-2 text-neutral-400">실험, 과제, 삽질 기록. 짧고 자주.</p>
+    <p class="mt-2" style="color: var(--satl-text-dim);">
+      실험, 과제, 삽질 기록. 짧고 자주.
+    </p>
 
     {posts.length === 0 ? (
-      <div class="mt-10 rounded border border-neutral-800 bg-neutral-900 p-8 text-center text-neutral-500">
+      <div
+        class="satl-card mt-10 p-8 text-center"
+        style="color: var(--satl-text-dim);"
+      >
         노트가 곧 추가됩니다.
       </div>
     ) : (
       <div class="mt-8 space-y-4">
         {posts.map((post) => (
-          <a href={`/notes/${post.id}`} class="block rounded border border-neutral-800 bg-neutral-900 px-5 py-4 no-underline transition hover:border-neutral-600">
-            <h2 class="text-lg font-semibold text-white">{post.data.title}</h2>
-            <p class="mt-1 text-sm text-neutral-500">{fmtKSTDate(post.data.date)}</p>
-          </a>
+          <ContentCard
+            href={`/notes/${post.id}`}
+            title={post.data.title}
+            date={post.data.publishedAt}
+            summary={post.data.summary}
+            tags={post.data.tags}
+          />
         ))}
       </div>
     )}

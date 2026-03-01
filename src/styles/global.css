@@ -6,209 +6,290 @@
 }
 
 /* =========================================================
-   Dark Theme (default)
+   Theme tokens (single source of truth)
+   ========================================================= */
+:root {
+  /* surfaces */
+  --satl-surface: rgba(16, 16, 20, 0.55);
+  --satl-surface-strong: rgba(20, 20, 24, 0.55);
+
+  /* borders / text */
+  --satl-border: rgba(255, 255, 255, 0.10);
+  --satl-border-hover: rgba(255, 255, 255, 0.22);
+  --satl-text: rgba(255, 255, 255, 0.90);
+  --satl-text-dim: rgba(255, 255, 255, 0.55);
+  --satl-inset: rgba(0, 0, 0, 0.35);
+  --satl-sep: rgba(255, 255, 255, 0.18);
+
+  /* cards */
+  --satl-card: rgba(16, 16, 20, 0.85);
+  --satl-card-border: rgba(255, 255, 255, 0.10);
+  --satl-card-border-hover: rgba(255, 255, 255, 0.22);
+
+  /* chips */
+  --satl-chip-bg: var(--satl-surface);
+  --satl-chip-border: var(--satl-border);
+}
+
+html.light {
+  /* surfaces */
+  --satl-surface: rgba(255, 255, 255, 0.75);
+  --satl-surface-strong: rgba(255, 255, 255, 0.85);
+
+  /* borders / text */
+  --satl-border: rgba(0, 0, 0, 0.12);
+  --satl-border-hover: rgba(0, 0, 0, 0.22);
+  --satl-text: rgba(0, 0, 0, 0.85);
+  --satl-text-dim: rgba(0, 0, 0, 0.55);
+  --satl-inset: rgba(0, 0, 0, 0.08);
+  --satl-sep: rgba(0, 0, 0, 0.14);
+
+  /* cards */
+  --satl-card: rgba(255, 255, 255, 0.95);
+  --satl-card-border: rgba(0, 0, 0, 0.12);
+  --satl-card-border-hover: rgba(0, 0, 0, 0.22);
+
+  /* chips (slightly lighter than surface in light) */
+  --satl-chip-bg: rgba(255, 255, 255, 0.92);
+  --satl-chip-border: rgba(0, 0, 0, 0.10);
+}
+
+/* =========================================================
+   Base theme
    ========================================================= */
 html.dark body {
   background-color: #0a0a0a;
   color: #f5f5f5;
 }
-
-/* =========================================================
-   Light Theme
-   ========================================================= */
 html.light body {
   background-color: #fafafa;
   color: #171717;
 }
 
-/* ── Header / Footer ── */
-html.light header {
-  background-color: rgba(250, 250, 250, 0.85) !important;
-  border-color: #e5e5e5 !important;
+/* Native form widgets follow theme */
+html.dark { color-scheme: dark; }
+html.light { color-scheme: light; }
+
+/* Dropdown option colors */
+select option { background-color: #171717; color: #f5f5f5; }
+html.light select option { background-color: #ffffff; color: #171717; }
+
+/* Preserve semantic accent colors in light mode */
+html.light .text-cyan-400 { color: #22d3ee; }
+html.light .text-green-400 { color: #4ade80; }
+html.light .text-yellow-400 { color: #facc15; }
+
+html.light .border-cyan-800 { border-color: #155e75; }
+html.light .border-green-800 { border-color: #166534; }
+html.light .border-yellow-800 { border-color: #854d0e; }
+
+/* Hero grid visibility (light) */
+html.light .opacity-\[0\.04\] { opacity: 0.08 !important; }
+
+/* =========================================================
+   Components (satl-*)
+   ========================================================= */
+
+/* Surface (header/footer/search containers) */
+.satl-surface {
+  background: var(--satl-surface);
+  border: 1px solid var(--satl-border);
+  box-shadow: 0 0 0 1px var(--satl-inset) inset;
+  backdrop-filter: blur(10px);
+}
+.satl-surface--bottom {
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
 }
 
-html.light footer {
-  background-color: #fafafa !important;
-  border-color: #e5e5e5 !important;
+/* Card */
+.satl-card {
+  background: var(--satl-card);
+  border: 1px solid var(--satl-card-border);
+  border-radius: 12px;
+  box-shadow: 0 0 0 1px var(--satl-inset) inset;
+}
+.satl-card:hover {
+  border-color: var(--satl-card-border-hover);
 }
 
-/* ── Headings ── */
-html.light h1, html.light h2, html.light h3 {
-  color: #171717 !important;
+/* Chip */
+.satl-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  border: 1px solid var(--satl-chip-border);
+  background: var(--satl-chip-bg);
+  color: var(--satl-text);
+  box-shadow: 0 0 0 1px var(--satl-inset) inset;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+}
+.satl-chip--active {
+  background: var(--satl-text);
+  border-color: var(--satl-text);
+  color: rgba(0, 0, 0, 0.88);
+}
+.satl-chip--active:hover {
+  background: var(--satl-text);
+  border-color: var(--satl-text);
 }
 
-/* ── Links ── */
-html.light a {
-  color: #404040;
+/* Token link */
+.satl-link {
+  color: var(--satl-text-dim);
+  text-decoration: none;
+  transition: color 150ms ease;
 }
-html.light a:hover {
-  color: #000;
+.satl-link:hover { color: var(--satl-text); }
+
+/* Muted text helper */
+.satl-muted { color: var(--satl-text-dim); }
+
+/* Header background mix */
+.satl-header {
+  background: color-mix(in srgb, var(--satl-surface-strong) 75%, transparent);
 }
 
-/* ── Cards, badges, containers ── */
-html.light [class*="bg-neutral-9"] {
-  background-color: #f5f5f5 !important;
+/* Desktop nav link */
+.satl-navlink {
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: color 150ms ease, border-color 150ms ease;
+  color: var(--satl-text-dim);
+  border-bottom: 1px solid transparent;
+  padding-bottom: 2px;
+}
+.satl-navlink:hover { color: var(--satl-text); }
+.satl-navlink--active {
+  color: var(--satl-text);
+  border-bottom-color: var(--satl-text);
+  font-weight: 600;
 }
 
-html.light [class*="border-neutral-8"],
-html.light [class*="border-neutral-7"] {
-  border-color: #a3a3a3 !important;
+/* Theme toggle button */
+.theme-toggle {
+  cursor: pointer;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  transition: border-color 150ms ease, background 150ms ease;
+  color: var(--satl-text);
+
+  background: var(--satl-surface);
+  border: 1px solid var(--satl-border);
+  box-shadow: 0 0 0 1px var(--satl-inset) inset;
+  backdrop-filter: blur(10px);
+}
+.theme-toggle:hover { border-color: var(--satl-border-hover); }
+
+/* =========================================================
+   Page-specific (Home)
+   ========================================================= */
+
+/* Status pill */
+.status-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 9999px;
+  border: 1px solid var(--satl-border);
+  background: var(--satl-surface-strong);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 0 1px var(--satl-inset) inset;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  color: var(--satl-text-dim);
+}
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.12);
+}
+.status-label { color: var(--satl-text-dim); }
+.status-value { color: var(--satl-text); font-weight: 600; }
+.status-sep {
+  width: 1px;
+  height: 14px;
+  background: var(--satl-sep);
+  margin: 0 6px;
 }
 
-/* ── Text colors ── */
-html.light .text-white {
-  color: #171717 !important;
+/* Home search */
+.home-search {
+  margin: 16px auto 0;
+  max-width: 860px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
+.home-search__input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 320px;
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--satl-border);
+  background: var(--satl-surface);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 0 1px var(--satl-inset) inset;
+}
+.home-search__icon { color: var(--satl-text-dim); display: flex; }
+.home-search__field {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--satl-text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 14px;
+}
+.home-search__field::placeholder { color: var(--satl-text-dim); opacity: 0.75; }
 
-html.light [class*="text-neutral-1"] {
-  color: #171717 !important;
+.home-search__select {
+  height: 46px;
+  padding: 0 12px;
+  border-radius: 14px;
+  border: 1px solid var(--satl-border);
+  background: var(--satl-surface);
+  color: var(--satl-text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  outline: none;
 }
-
-html.light [class*="text-neutral-3"] {
-  color: #525252 !important;
+.home-search__btn,
+.home-search__iconBtn {
+  height: 46px;
+  border-radius: 14px;
+  border: 1px solid var(--satl-border);
+  background: var(--satl-surface);
+  color: var(--satl-text);
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 0 1px var(--satl-inset) inset;
+  transition: border-color 150ms ease;
 }
-
-html.light [class*="text-neutral-4"],
-html.light [class*="text-neutral-5"] {
-  color: #737373 !important;
+.home-search__btn {
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
-
-/* ── Status bar ── */
-html.light [class*="bg-neutral-900/50"] {
-  background-color: rgba(245, 245, 245, 0.8) !important;
+.home-search__iconBtn {
+  width: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-
-/* ── Hero grid background ── */
-html.light .opacity-\[0\.04\] {
-  opacity: 0.08 !important;
-}
-
-/* ---------------------------------------------------------
-   Home Search (scoped)
-   --------------------------------------------------------- */
-html.light #home-search input,
-html.light #home-search select {
-  background: #ffffff !important;
-  border-color: #d4d4d4 !important;
-  color: #171717 !important;
-}
-
-html.light #home-search input::placeholder {
-  color: #a3a3a3 !important;
-}
-
-html.light #home-search button {
-  background: #ffffff !important;
-  border-color: #d4d4d4 !important;
-  color: #171717 !important;
-}
-
-html.light #home-search input:focus,
-html.light #home-search select:focus {
-  border-color: rgba(8, 145, 178, 0.7) !important;
-}
-
-/* ---------------------------------------------------------
-   Search Page inputs (scoped)
-   --------------------------------------------------------- */
-html.light #search-page #q,
-html.light #search-page #type {
-  background: #ffffff !important;
-  border-color: #d4d4d4 !important;
-  color: #171717 !important;
-}
-
-html.light #search-page #q::placeholder {
-  color: #a3a3a3 !important;
-}
-
-html.light #search-page #q:focus,
-html.light #search-page #type:focus {
-  border-color: rgba(8, 145, 178, 0.7) !important;
-}
-
-/* ---------------------------------------------------------
-   Home instant-search results (light)
-   --------------------------------------------------------- */
-html.light #home-search-results > div {
-  background: rgba(255, 255, 255, 0.9) !important;
-  border-color: #d4d4d4 !important;
-}
-
-html.light #home-search-results a {
-  background: #ffffff !important;
-  border-color: #e5e5e5 !important;
-}
-
-html.light #home-search-results a:hover {
-  border-color: #a3a3a3 !important;
-}
-
-html.light #home-search-results .text-white {
-  color: #171717 !important;
-}
-
-html.light #home-search-results .text-neutral-400 {
-  color: #737373 !important;
-}
-
-/* ---------------------------------------------------------
-   Search results page (light)
-   --------------------------------------------------------- */
-html.light #results a {
-  background: #ffffff !important;
-  border-color: #e5e5e5 !important;
-}
-
-html.light #results a:hover {
-  border-color: #a3a3a3 !important;
-}
-
-/* ---------------------------------------------------------
-   Category badges (light) - keep visible
-   --------------------------------------------------------- */
-html.light .font-mono[class*="border-neutral"] {
-  background-color: #ffffff !important;
-  border-color: #d4d4d4 !important;
-  color: #525252 !important;
-}
-
-/* ---------------------------------------------------------
-   Select dropdown (dark)
-   --------------------------------------------------------- */
-select option {
-  background-color: #171717;
-  color: #f5f5f5;
-}
-
-html.light select option {
-  background-color: #ffffff;
-  color: #171717;
-}
-
-/* ---------------------------------------------------------
-   Preserve status colors in light mode
-   --------------------------------------------------------- */
-html.light .text-cyan-400 {
-  color: #22d3ee !important;
-}
-
-html.light .text-green-400 {
-  color: #4ade80 !important;
-}
-
-html.light .text-yellow-400 {
-  color: #facc15 !important;
-}
-
-html.light .border-cyan-800 {
-  border-color: #155e75 !important;
-}
-
-html.light .border-green-800 {
-  border-color: #166534 !important;
-}
-
-html.light .border-yellow-800 {
-  border-color: #854d0e !important;
-}
+.home-search__btn:hover,
+.home-search__iconBtn:hover { border-color: var(--satl-border-hover); }

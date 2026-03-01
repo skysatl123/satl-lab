@@ -1,7 +1,7 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import { fmtKSTDate } from '../../lib/date';
-import { getBlogPosts } from '../../lib/content';
+import Layout from "../../layouts/Layout.astro";
+import ContentCard from "../../components/ContentCard.astro";
+import { getBlogPosts } from "../../lib/content";
 
 const posts = await getBlogPosts();
 ---
@@ -9,31 +9,27 @@ const posts = await getBlogPosts();
 <Layout title="Blog | SATL Lab">
   <main class="mx-auto max-w-3xl px-4 py-12">
     <h1 class="text-3xl font-bold">Blog</h1>
-    <p class="mt-2 text-neutral-400">
+    <p class="mt-2" style="color: var(--satl-text-dim);">
       이론 정리, 개념 설명, 학습 기록을 글로 남깁니다.
     </p>
 
     {posts.length === 0 ? (
-      <div class="mt-10 rounded border border-neutral-800 bg-neutral-900 p-8 text-center text-neutral-500">
+      <div
+        class="satl-card mt-10 p-8 text-center"
+        style="color: var(--satl-text-dim);"
+      >
         글이 곧 추가됩니다.
       </div>
     ) : (
       <div class="mt-8 space-y-4">
         {posts.map((post) => (
-          <a href={`/blog/${post.id}`} class="block rounded border border-neutral-800 bg-neutral-900 px-5 py-4 no-underline transition hover:border-neutral-600">
-            <h2 class="text-lg font-semibold text-white">{post.data.title}</h2>
-            <p class="mt-1 text-sm text-neutral-500">{fmtKSTDate(post.data.date)}</p>
-            {post.data.description && (
-              <p class="mt-2 text-sm text-neutral-400">{post.data.description}</p>
-            )}
-            {post.data.tags && (
-              <div class="mt-2 flex gap-2">
-                {post.data.tags.map((tag: string) => (
-                  <span class="rounded-full border border-neutral-700 px-2 py-0.5 text-xs text-neutral-400">{tag}</span>
-                ))}
-              </div>
-            )}
-          </a>
+          <ContentCard
+            href={`/blog/${post.id}`}
+            title={post.data.title}
+            date={post.data.publishedAt}
+            summary={post.data.summary}
+            tags={post.data.tags}
+          />
         ))}
       </div>
     )}
