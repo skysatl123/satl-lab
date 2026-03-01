@@ -1,0 +1,55 @@
+---
+title: 코드 테스트
+status: published
+publishedAt: 2026-03-02
+updatedAt: 2026-03-02
+topic: 기타
+kind: theory
+---
+Heap Sort (정렬)
+힙(Heap) 자료구조의 성질을 이용해서 정렬하는 알고리즘.
+
+먼저 배열을 Max-Heap으로 만든 다음,
+
+루트(최댓값)를 배열 끝으로 보내고 힙 크기를 줄이며 반복.
+
+시간복잡도는 O(n log n), 추가 메모리는 O(1) (in-place), 안정 정렬은 아님.
+
+
+### 코드 테스트
+
+```java
+import java.util.Arrays;
+
+public class HeapSortExample {
+    public static void heapSort(int[] a) {
+        int n = a.length;
+        for (int i = n/2 - 1; i >= 0; i--) siftDown(a, n, i);
+        for (int end = n - 1; end > 0; end--) {
+            swap(a, 0, end);
+            siftDown(a, end, 0);
+        }
+    }
+
+    private static void siftDown(int[] a, int heapSize, int i) {
+        while (true) {
+            int left = 2*i + 1, right = left + 1, largest = i;
+            if (left < heapSize && a[left] > a[largest]) largest = left;
+            if (right < heapSize && a[right] > a[largest]) largest = right;
+            if (largest == i) return;
+            swap(a, i, largest);
+            i = largest;
+        }
+    }
+
+    private static void swap(int[] a, int i, int j) {
+        int t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {7,3,10,1,9,2,8,5,4,6};
+        System.out.println("before: " + Arrays.toString(arr));
+        heapSort(arr);
+        System.out.println("after : " + Arrays.toString(arr));
+    }
+} 
